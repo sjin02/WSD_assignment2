@@ -1,32 +1,34 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { getBooks } from "../api/books";
 import BookCard from "../components/BookCard";
-import { Link } from "react-router-dom";
 
 function Home() {
+  const [books, setBooks] = useState([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const data = await getBooks();
+        setBooks(data); // 받아온 데이터를 상태로 저장
+      } catch (err) {
+        console.error("책 불러오기 오류:", err);
+      }
+    }
+    fetchData();
+  }, []);
+
   return (
     <div>
-      <h2>서점 홈</h2>
-      <Link to="/login">로그인 하러가기</Link>
-      <br /><br />
-      <Link to="/books/3">3번 책 상세 보기</Link>
+      <h2>책 목록</h2>
 
-      <BookCard
-        title="해리포터와 마법사의 돌"
-        author="J.K. 롤링"
-        price={15000}
-      />
-
-      <BookCard
-        title="나미야 잡화점의 기적"
-        author="히가시노 게이고"
-        price={14000}
-      />
-
-      <BookCard
-        title="미움받을 용기"
-        author="기시미 이치로"
-        price={13000}
-      />
+      {books.map((book) => (
+        <BookCard
+          key={book.id}
+          title={book.title}
+          author={book.author}
+          price={book.price}
+        />
+      ))}
     </div>
   );
 }
