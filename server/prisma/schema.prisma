@@ -1,0 +1,160 @@
+// === DB 연결 설정 ===
+datasource db {
+  // PostgreSQL 쓰고 있으면 "postgresql"
+  // 과제에서 MySQL이 필수면 "mysql" 로 바꾸면 됨
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// === 공통 Enum ===
+enum UserRole {
+  USER
+  SELLER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
+
+// =====================
+// Users
+// =====================
+model User {
+  id           Int       @id @default(autoincrement())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         UserRole  @default(USER)
+  createdAt    DateTime  @default(now())
+
+  // relations
+  cart        Cart?
+  orders      Order[]
+  reviews     Review[]
+  favorites   Favorite[]
+  library     Library[]
+}
+
+// =====================
+// Books
+// =====================
+model Book {
+  id            Int        @id @default(autoincrement())
+  title         String
+  author        String?
+  price         Int
+  stock         Int        @default(0)
+  isbn          String?    @unique
+  description   String?
+  coverImageUrl String?
+  createdAt     DateTime   @default(now())
+
+  // relations
+  cartItems   CartItem[]
+  orderItems  OrderItem[]
+  reviews     Review[]
+  favorites   Favorite[]
+  library     Library[]
+}
+
+// =====================
+// Carts
+// =====================
+model Cart {
+  id     Int   @id @default(autoincrement())
+  userId Int   @unique
+
+  user   User  @relation(fields: [userId], references: [id])
+  items  CartItem[]
+}
+
+// =====================
+// CartItems
+// =====================
+model CartItem {
+  id       Int   @id @default(autoincrement())
+  cartId   Int
+  bookId   Int
+  quantity Int
+
+  cart Cart @relation(fields: [cartId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+}
+
+// =====================
+// Orders
+// =====================
+model Order {
+  id          Int          @id @default(autoincrement())
+  userId      Int
+  totalAmount Int
+  status      OrderStatus  @default(PENDING)
+  createdAt   DateTime     @default(now())
+
+  user   User        @relation(fields: [userId], references: [id])
+  items  OrderItem[]
+}
+
+// =====================
+// OrderItems
+// =====================
+model OrderItem {
+  id        Int   @id @default(autoincrement())
+  orderId   Int
+  bookId    Int
+  quantity  Int
+  unitPrice Int
+
+  order Order @relation(fields: [orderId], references: [id])
+  book  Book  @relation(fields: [bookId], references: [id])
+}
+
+// =====================
+// Reviews
+// =====================
+model Review {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  bookId    Int
+  rating    Int?
+  comment   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+}
+
+// =====================
+// Favorites (찜)
+// =====================
+model Favorite {
+  id      Int  @id @default(autoincrement())
+  userId  Int
+  bookId  Int
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@unique([userId, bookId])
+}
+
+// =====================
+// Library (내 서재)
+// =====================
+model Library {
+  id      Int  @id @default(autoincrement())
+  userId  Int
+  bookId  Int
+
+  user User @relation(fields: [userId], references: [id])
+  book Book @relation(fields: [bookId], references: [id])
+
+  @@unique([userId, bookId])
+}
