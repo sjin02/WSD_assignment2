@@ -8,7 +8,7 @@ export async function signup(req, res, next) {
 
     const exists = await prisma.user.findUnique({ where: { email } });
     if (exists) {
-      return res.fail("이미 존재하는 이메일", 409, "USER_EXISTS");
+      return res.fail("이미 존재하는 이메일", 409, "DUPLICATE_RESOURCE");
     }
 
     const passwordHash = await bcrypt.hash(password, 10);

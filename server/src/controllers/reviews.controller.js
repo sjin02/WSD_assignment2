@@ -38,6 +38,10 @@ export async function updateReviewController(req, res, next) {
     
     res.success(review, 200, "리뷰 수정 완료");
   } catch (err) {
+    if (err.message === "REVIEW_NOT_FOUND") {
+      return res.fail("리뷰를 찾을 수 없습니다", 404, "RESOURCE_NOT_FOUND");
+    }
+
     if (err.message === "FORBIDDEN")
       return res.fail("권한 없음", 403, "FORBIDDEN");
     next(err);
@@ -52,6 +56,10 @@ export async function deleteReviewController(req, res, next) {
     await deleteReview({ reviewId, userId });
     res.success({}, 200, "리뷰 삭제 완료");
   } catch (err) {
+    if (err.message === "REVIEW_NOT_FOUND") {
+      return res.fail("리뷰를 찾을 수 없습니다", 404, "RESOURCE_NOT_FOUND");
+    }
+
     if (err.message === "FORBIDDEN")
       return res.fail("권한 없음", 403, "FORBIDDEN");
     next(err);

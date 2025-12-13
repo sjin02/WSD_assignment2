@@ -36,7 +36,6 @@ app.use("/auth", publicLimiter);
 
 // 라우터
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 app.use("/users", usersRouter);
 app.use("/admin", adminRouter);
 app.use("/auth", authRouter);
@@ -52,7 +51,6 @@ app.get("/health", (req, res) => {
     uptime: process.uptime()
   });
 });
-
 
 app.use(errorHandler);
 

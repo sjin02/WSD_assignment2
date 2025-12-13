@@ -51,7 +51,7 @@ export async function getBookByIdController(req, res, next) {
     return res.success(book, 200, "도서 상세 조회 완료");
   } catch (err) {
     if (err.message === "BOOK_NOT_FOUND") {
-      return res.fail("도서를 찾을 수 없습니다", 404, "BOOK_NOT_FOUND");
+      return res.fail("도서를 찾을 수 없습니다", 404, "RESOURCE_NOT_FOUND");
     }
     next(err);
   }
@@ -114,7 +114,7 @@ export async function updateBookController(req, res, next) {
     return res.success(book, 200, "도서 수정 완료");
   } catch (err) {
     if (err.message === "BOOK_NOT_FOUND") {
-      return res.fail("도서를 찾을 수 없습니다", 404, "BOOK_NOT_FOUND");
+      return res.fail("도서를 찾을 수 없습니다", 404, "RESOURCE_NOT_FOUND");
     }
     next(err);
   }
@@ -131,7 +131,7 @@ export async function deleteBookController(req, res, next) {
     return res.success({}, 200, "도서 삭제 완료");
   } catch (err) {
     if (err.message === "BOOK_NOT_FOUND") {
-      return res.fail("도서를 찾을 수 없습니다", 404, "BOOK_NOT_FOUND");
+      return res.fail("도서를 찾을 수 없습니다", 404, "RESOURCE_NOT_FOUND");
     }
     next(err);
   }

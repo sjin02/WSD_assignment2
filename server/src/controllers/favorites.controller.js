@@ -14,7 +14,7 @@ export async function addFavoriteController(req, res, next) {
   } catch (err) {
     // 이미 찜한 경우 (unique constraint)
     if (err.code === "P2002") {
-      return res.fail("이미 찜한 도서입니다", 409, "ALREADY_FAVORITED");
+      return res.fail("이미 찜한 도서입니다", 409, "DUPLICATE_RESOURCE");
     }
     next(err);
   }

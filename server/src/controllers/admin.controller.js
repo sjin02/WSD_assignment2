@@ -41,7 +41,7 @@ export async function softDeleteUser(req, res, next) {
 
     // 자기 자신 정지 방지
     if (targetId === req.user.userId) {
-      return res.fail("관리자는 자기 자신을 정지할 수 없습니다", 400, "INVALID_OPERATION");
+      return res.fail("관리자는 자기 자신을 정지할 수 없습니다", 409, "STATE_CONFLICT");
     }
 
     await prisma.user.update({
@@ -84,7 +84,7 @@ export async function updateUserByAdmin(req, res, next) {
     }
 
     if (err.message === "CANNOT_UPDATE_SELF") {
-      return res.fail("자기 자신은 수정할 수 없습니다", 400, "INVALID_OPERATION");
+      return res.fail("자기 자신은 수정할 수 없습니다", 409, "STATE_CONFLICT");
     }
 
     next(err);

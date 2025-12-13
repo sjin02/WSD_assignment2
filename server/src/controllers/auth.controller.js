@@ -15,7 +15,7 @@ export const login = async (req, res, next) => {
       return res.fail(
         "이메일이 올바르지 않습니다",
         401,
-        "AUTH_INVALID"
+        "UNAUTHORIZED"
       );
     }
 
@@ -24,7 +24,7 @@ export const login = async (req, res, next) => {
       return res.fail(
         "비밀번호가 올바르지 않습니다",
         401,
-        "AUTH_INVALID"
+        "UNAUTHORIZED"
       );
     }
 
@@ -77,7 +77,7 @@ export const refresh = async (req, res, next) => {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      return res.fail("refresh token 필요", 400, "TOKEN_REQUIRED");
+      return res.fail("refresh token 필요", 401, "UNAUTHORIZED");
     }
 
     //util로 검증
@@ -101,7 +101,7 @@ export const refresh = async (req, res, next) => {
     });
 
     if (!storedToken) {
-      return res.fail("유효하지 않은 토큰", 401, "TOKEN_INVALID");
+      return res.fail("유효하지 않은 토큰", 401, "UNAUTHORIZED");
     }
 
     const user = await prisma.user.findUnique({
@@ -109,7 +109,7 @@ export const refresh = async (req, res, next) => {
     });
 
     if (!user || user.deletedAt) {
-      return res.fail("사용자 없음", 401, "USER_NOT_FOUND");
+      return res.fail("사용자 없음", 404, "USER_NOT_FOUND");
     }
 
     const newAccessToken = signAccessToken({

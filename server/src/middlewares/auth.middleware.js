@@ -18,6 +18,10 @@ export const authenticate = (req, res, next) => {
 
     next();
   } catch (err) {
-    return res.fail("Invalid or expired token", 401, "TOKEN_INVALID");
+    if (err.name === "TokenExpiredError") {
+      return res.fail("토큰이 만료되었습니다.", 401, "TOKEN_EXPIRED");
+    }
+
+    return res.fail("유효하지 않은 토큰입니다.", 401, "UNAUTHORIZED");
   }
 };

@@ -10,15 +10,22 @@ const responseMiddleware = (req, res, next) => {
   res.fail = (
     message = "Bad Request",
     statusCode = 400,
-    code = "ERROR",
+    code = "BAD_REQUEST",
+    details,
   ) => {
-    return res.status(statusCode).json({
+    const payload = {
       timestamp: new Date().toISOString(),
       path: req.originalUrl,
       status: statusCode,
       code,
-      message
-    });
+      message,
+    };
+
+    if (details) {
+      payload.details = details;
+    }
+
+    return res.status(statusCode).json(payload);
   };
 
  
