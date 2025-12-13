@@ -28,7 +28,7 @@ app.use(cors({
 }));
 app.use(express.json({ limit: "1mb" })); // JSON 요청 바디 파싱, 최대 크기 1MB
 app.use(express.urlencoded({ extended: true })); // URL-encoded 요청 바디 파싱
-app.use(morgan("dev"));
+app.use(morgan("dev")); // 요청 로깅
 app.use(responseMiddleware);
 
 // 공용 라우터에 대한 속도 제한 설정
