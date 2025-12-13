@@ -1,8 +1,24 @@
 export default function errorHandler(err, req, res, next) {
   console.error(err);
 
-  // 사전 처리된 비즈니스/검증 에러
-  if (err.statusCode === 422 || err.status === 422 || err.code === "UNPROCESSABLE_ENTITY") {
+  // 1. 표준 비즈니스 에러
+  // service/controller에서 의도적으로 throw한 에러
+  if (err.status && err.code) {
+    return res.status(err.status).json({
+      timestamp: new Date().toISOString(),
+      status: err.status >= 500 ? "error" : "fail",
+      code: err.code,
+      message: err.message,
+      ...(err.details && { details: err.details }),
+    });
+  }
+
+  // 2. 사전 처리된 validation 에러
+  if (
+    err.statusCode === 422 ||
+    err.status === 422 ||
+    err.code === "UNPROCESSABLE_ENTITY"
+  ) {
     return res.status(422).json({
       timestamp: new Date().toISOString(),
       status: "fail",
@@ -12,7 +28,7 @@ export default function errorHandler(err, req, res, next) {
     });
   }
 
-  // Zod validation 에러
+  // 3. Zod validation 에러
   if (err.name === "ZodError") {
     return res.status(422).json({
       timestamp: new Date().toISOString(),
@@ -23,7 +39,7 @@ export default function errorHandler(err, req, res, next) {
     });
   }
 
-  // Prisma not found
+  // 4. Prisma not found
   if (err.code === "P2025") {
     return res.status(404).json({
       timestamp: new Date().toISOString(),
@@ -33,7 +49,7 @@ export default function errorHandler(err, req, res, next) {
     });
   }
 
-  // Prisma(DB) 관련 에러
+  // 5. Prisma(DB) 관련 에러
   if (err.code?.startsWith?.("P")) {
     return res.status(500).json({
       timestamp: new Date().toISOString(),
@@ -43,7 +59,7 @@ export default function errorHandler(err, req, res, next) {
     });
   }
 
-  // 기본 서버 에러
+  // 6. 기본 서버 에러 (최종 fallback)
   return res.status(500).json({
     timestamp: new Date().toISOString(),
     status: "error",

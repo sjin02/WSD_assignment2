@@ -12,6 +12,7 @@ import adminRouter from "./routes/admin.route.js";
 import errorHandler  from "./middlewares/error.middleware.js";
 import reviewsRouter from "./routes/review.route.js";
 import cartRouter from "./routes/cart.route.js";
+import ordersRouter from "./routes/orders.route.js";
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
@@ -37,6 +38,9 @@ const publicLimiter = rateLimit({
 });
 
 app.use("/auth", publicLimiter);
+app.use("/health", publicLimiter);
+app.use("/api-docs", publicLimiter);
+app.use("/books", publicLimiter);
 
 // 라우터
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -46,6 +50,8 @@ app.use("/auth", authRouter);
 app.use("/books", booksRouter);
 app.use("/reviews", reviewsRouter);
 app.use("/cart", cartRouter);
+app.use("/orders", ordersRouter);
+
 
 // 헬스 체크
 app.get("/health", (req, res) => {
