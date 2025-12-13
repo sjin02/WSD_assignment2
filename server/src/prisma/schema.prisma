@@ -34,51 +34,53 @@ model User {
   deletedAt    DateTime?
 
   // relations
-  cart        Cart?
-  orders      Order[]
-  reviews     Review[]
-  favorites   Favorite[]
-  library     Library[]
+  cart          Cart?
+  orders        Order[]
+  reviews       Review[]
+  favorites     Favorite[]
+  library       Library[]
+  refreshTokens RefreshToken[]
 }
 
 // =====================
 // Books
 // =====================
 model Book {
-  id            Int        @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   title         String
   author        String?
   price         Int
-  stock         Int        @default(0)
-  isbn          String?    @unique
+  stock         Int      @default(0)
+  isbn          String?  @unique
   description   String?
   coverImageUrl String?
-  createdAt     DateTime   @default(now())
+  createdAt     DateTime @default(now())
+  deletedAt     DateTime?
 
   // relations
-  cartItems   CartItem[]
-  orderItems  OrderItem[]
-  reviews     Review[]
-  favorites   Favorite[]
-  library     Library[]
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  reviews    Review[]
+  favorites  Favorite[]
+  library    Library[]
 }
 
 // =====================
 // Carts
 // =====================
 model Cart {
-  id     Int   @id @default(autoincrement())
-  userId Int   @unique
+  id     Int @id @default(autoincrement())
+  userId Int @unique
 
-  user   User  @relation(fields: [userId], references: [id])
-  items  CartItem[]
+  user  User       @relation(fields: [userId], references: [id])
+  items CartItem[]
 }
 
 // =====================
 // CartItems
 // =====================
 model CartItem {
-  id       Int   @id @default(autoincrement())
+  id       Int @id @default(autoincrement())
   cartId   Int
   bookId   Int
   quantity Int
@@ -91,21 +93,21 @@ model CartItem {
 // Orders
 // =====================
 model Order {
-  id          Int          @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   userId      Int
   totalAmount Int
-  status      OrderStatus  @default(PENDING)
-  createdAt   DateTime     @default(now())
+  status      OrderStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
 
-  user   User        @relation(fields: [userId], references: [id])
-  items  OrderItem[]
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
 }
 
 // =====================
 // OrderItems
 // =====================
 model OrderItem {
-  id        Int   @id @default(autoincrement())
+  id        Int @id @default(autoincrement())
   orderId   Int
   bookId    Int
   quantity  Int
@@ -134,9 +136,9 @@ model Review {
 // Favorites (찜)
 // =====================
 model Favorite {
-  id      Int  @id @default(autoincrement())
-  userId  Int
-  bookId  Int
+  id     Int @id @default(autoincrement())
+  userId Int
+  bookId Int
 
   user User @relation(fields: [userId], references: [id])
   book Book @relation(fields: [bookId], references: [id])
@@ -148,12 +150,28 @@ model Favorite {
 // Library (내 서재)
 // =====================
 model Library {
-  id      Int  @id @default(autoincrement())
-  userId  Int
-  bookId  Int
+  id     Int @id @default(autoincrement())
+  userId Int
+  bookId Int
 
   user User @relation(fields: [userId], references: [id])
   book Book @relation(fields: [bookId], references: [id])
 
   @@unique([userId, bookId])
+}
+
+// =====================
+// Refresh Tokens
+// =====================
+model RefreshToken {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }

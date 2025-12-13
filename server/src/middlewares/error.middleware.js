@@ -1,14 +1,22 @@
-export function errorHandler(err, req, res, next) {
-  const status = err.status || 500;
+export default function errorHandler(err, req, res, next) {
+  console.error(err);
 
-  res.status(status).json({
+  // Zod validation 에러
+  if (err.name === "ZodError") {
+    return res.status(422).json({
+      timestamp: new Date().toISOString(),
+      status: "fail",
+      code: "VALIDATION_ERROR",
+      message: "Invalid request data",
+      details: err.errors,
+    });
+  }
+
+  // 기본 서버 에러
+  return res.status(500).json({
     timestamp: new Date().toISOString(),
-    path: req.originalUrl,
-    status,
-    code: err.code || "INTERNAL_ERROR",
-    message: err.message || "서버 오류",
-    details: err.details || null,
+    status: "error",
+    code: "INTERNAL_SERVER_ERROR",
+    message: err.message || "Unexpected error",
   });
 }
-
-export default errorHandler;

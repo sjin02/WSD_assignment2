@@ -1,27 +1,23 @@
-import jwt from "jsonwebtoken";
+import { verifyToken } from "../utils/jwt.js";
 
-export function authenticate(req, res, next) {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    throw {
-      status: 401,
-      code: "NO_TOKEN",
-      message: "인증 토큰이 필요합니다",
-    };
-  }
-
-  const token = authHeader.split(" ")[1];
-
+export const authenticate = (req, res, next) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded; // { userId, role }
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.fail("인증 토큰이 필요합니다.", 401, "UNAUTHORIZED");
+    }
+
+    const token = authHeader.split(" ")[1];
+    if (!token) {
+      return res.fail("토큰이 없습니다.", 401, "UNAUTHORIZED");
+    }
+
+    const payload = verifyToken(token, process.env.JWT_ACCESS_SECRET);
+
+    req.user = payload;
+
     next();
-  } catch {
-    throw {
-      status: 401,
-      code: "INVALID_TOKEN",
-      message: "유효하지 않은 토큰",
-    };
+  } catch (err) {
+    return res.fail("Invalid or expired token", 401, "TOKEN_INVALID");
   }
-}
+};
