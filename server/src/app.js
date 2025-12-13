@@ -1,14 +1,18 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import rateLimit from "express-rate-limit";
+
+import responseMiddleware from "./middlewares/response.middleware.js";
+
 import authRouter from "./routes/auth.route.js";
 import booksRouter from "./routes/books.route.js";
 import usersRouter from "./routes/users.route.js";
 import adminRouter from "./routes/admin.route.js";
-import responseMiddleware from "./middlewares/response.middleware.js";
 import errorHandler  from "./middlewares/error.middleware.js";
-import rateLimit from "express-rate-limit";
 import reviewsRouter from "./routes/review.route.js";
+import cartRouter from "./routes/cart.route.js";
+
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
 
@@ -41,6 +45,7 @@ app.use("/admin", adminRouter);
 app.use("/auth", authRouter);
 app.use("/books", booksRouter);
 app.use("/reviews", reviewsRouter);
+app.use("/cart", cartRouter);
 
 // 헬스 체크
 app.get("/health", (req, res) => {
