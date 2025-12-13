@@ -1,11 +1,12 @@
-import prisma from '../prisma/client.js';
+import prisma from "../prisma/client.js";
 
-export const getBooks = async (req, res) => {
+export async function getBooks(req, res) {
   try {
     const books = await prisma.book.findMany();
-    res.json(books);
+
+    res.json({ books });
   } catch (error) {
-    console.error('GET /books error:', error);
-    res.status(500).json({ message: '서버 오류가 발생했습니다.' });
+    console.error("Book fetch error:", error);
+    res.status(500).json({ message: "Failed to fetch books" });
   }
-};
+}

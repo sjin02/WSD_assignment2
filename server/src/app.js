@@ -3,6 +3,10 @@ import cors from "cors";
 import morgan from "morgan";
 import authRouter from "./routes/auth.route.js";
 import booksRouter from "./routes/books.route.js";
+import usersRouter from "./routes/users.route.js";
+import adminRouter from "./routes/admin.route.js";
+import responseMiddleware from "./middlewares/response.middleware.js";
+import errorHandler  from "./middlewares/error.middleware.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -15,14 +19,19 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(morgan("dev"));
+app.use(responseMiddleware);
 
-//app.use("/auth", authRouter);
-//app.use("/books", booksRouter);
+app.use("/users", usersRouter);
+app.use("/admin", adminRouter);
+app.use("/auth", authRouter);
+app.use("/books", booksRouter);
 
 // 헬스 체크
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
+
+app.use(errorHandler);
 
 // //  책 목록 API 추가
 // app.get("/books", (req, res) => {

@@ -1,7 +1,5 @@
 // === DB 연결 설정 ===
 datasource db {
-  // PostgreSQL 쓰고 있으면 "postgresql"
-  // 과제에서 MySQL이 필수면 "mysql" 로 바꾸면 됨
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
@@ -33,6 +31,7 @@ model User {
   name         String
   role         UserRole  @default(USER)
   createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
 
   // relations
   cart        Cart?
