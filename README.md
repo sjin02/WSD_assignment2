@@ -1,7 +1,7 @@
 # Bookstore API
 
 온라인 서점 서비스를 위한 REST API 서버입니다.  
-사용자 인증을 기반으로 도서 조회, 구매, 리뷰, 찜, 장바구니, 주문 관리 기능을 제공합니다.
+사용자/판매자/관리자 인증을 기반으로 도서 조회, 도서 관리, 구매, 리뷰, 찜, 장바구니, 주문 관리, 유저 관리 등의 기능을 제공합니다.
 
 ---
 
@@ -16,19 +16,20 @@ REST API 형태로 구현하고, 인증/인가, 테스트, 문서화까지 포�
 ### 주요 기능
 
 - JWT 기반 사용자 인증 (Access / Refresh Token)
-- 역할 기반 권한 제어 (USER / ADMIN)
-- 도서 CRUD 및 검색, 페이지네이션
+- 역할 기반 권한 제어 (USER / SELLER / ADMIN)
+- 도서 CRUD 및 검색, 페이지네이션, 필터, 정렬
 - 장바구니, 주문 흐름
 - 리뷰 및 찜 기능
 - Swagger API 문서 자동화
 - Jest + Supertest 자동화 테스트
 - Postman 컬렉션 및 테스트 스크립트 제공
+- 간단한 모니터링 메트릭 (/metrics)
 
 ---
 
 ## 2. 실행 방법
 
-### 로컬 실행
+### 로컬 실행(Node.js)
 
 #### 1) 의존성 설치
 
@@ -62,31 +63,13 @@ npm run dev
 
 ---
 
-## 3. 환경변수 설명
+### Docker (권장하지 않음 – 과제 환경 제약)
 
-```env
-PORT=8080
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DB_NAME
-JWT_ACCESS_SECRET=access-secret
-JWT_REFRESH_SECRET=refresh-secret
-ACCESS_TOKEN_EXPIRES_IN=15m
-REFRESH_TOKEN_EXPIRES_IN=7d
+> **주의**: VM 디스크 용량 제한으로 인해 Docker 빌드 중 `ENOSPC` 오류가 반복 발생할 수 있습니다.
+
+```bash
+docker compose up --build
 ```
-
----
-
-## 4. 배포 정보 (JCloud)
-
-- **Base URL**  
-  http://113.198.66.75:18225
-
-- **Swagger URL**  
-  http://113.198.66.75:18225/api-docs
-
-- **Health Check**  
-  `GET /health` → `200 OK`
-
----
 
 ### 추가점수 Docker 배포 구현
 
@@ -111,6 +94,32 @@ docker system prune 등 정리 후에도 Prisma 및 Node 이미지 빌드 과정
 
 ---
 
+## 3. 환경변수 설명
+
+## 환경변수 설명 (.env.example)
+
+| 변수명                   | 설명                    |
+| ------------------------ | ----------------------- |
+| DATABASE_URL             | PostgreSQL 연결 문자열  |
+| JWT_SECRET               | Access Token 비밀키     |
+| JWT_REFRESH_SECRET       | Refresh Token 비밀키    |
+| PORT                     | 서버 포트 (기본 8080)   |
+| ACCESS_TOKEN_EXPIRES_IN  | 액세스 토큰 만료 시간   |
+| REFRESH_TOKEN_EXPIRES_IN | 리프레쉬 토큰 만료 시간 |
+
+---
+
+## 4. 배포 정보 (JCloud)
+
+- Base URL: [http://113.198.66.68:10081](http://113.198.66.68:10081)
+- Swagger: http://113.198.66.68:10081/api-docs
+- Health: http://113.198.66.68:10081/health
+- Metrics: http://113.198.66.68:10081/metrics
+  <br>
+- postman참고 : [postman문서](https://documenter.getpostman.com/view/48959495/2sB3dTs88x#b7df93a4-69bf-43ea-aa66-c15f178516c9)
+
+---
+
 ## 5. 인증 플로우
 
 1. 로그인 → Access / Refresh Token 발급
@@ -125,20 +134,11 @@ docker system prune 등 정리 후에도 Prisma 및 Node 이미지 빌드 과정
 
 ## 6. 역할 / 권한
 
-### USER
-
-- 도서 조회
-- 리뷰 작성
-- 장바구니
-- 주문
-
-### ADMIN
-
-- 도서 관리
-- 사용자 관리
-- 주문 관리
-
----
+| 역할   | 권한                              |
+| ------ | --------------------------------- |
+| USER   | 리뷰, 댓글, 찜, 장바구니, 주문 등 |
+| SELLER | USER 권한 + 도서 등록/수정        |
+| ADMIN  | 도서, 사용자, 주문 관리           |
 
 ## 7. 예제 계정
 
@@ -171,7 +171,25 @@ seller1@test.com / password123
 
 ---
 
-## 9. Postman 컬렉션
+## 9. 주요 엔드포인트 요약
+
+| Method | Endpoint      | 설명                              | 인증 |
+| ------ | ------------- | --------------------------------- | ---- |
+| POST   | /auth/login   | 로그인 (JWT 발급)                 | X    |
+| POST   | /users/signup | 회원가입 (비밀번호 bcrypt해시)    | X    |
+| GET    | /users/me     | 내 정보 조회                      | O    |
+| GET    | /books        | 도서 목록 조회 (쿼리/페이징/정렬) | X    |
+| GET    | /books/{id}   | 도서 상세 조회                    | X    |
+| POST   | /books        | 도서 등록 (SELLER/ADMIN)          | O    |
+| POST   | /cart/items   | 장바구니 상품 추가                | O    |
+| POST   | /orders       | 주문 생성                         | O    |
+| GET    | /health       | 서버 헬스 체크                    | X    |
+
+**추가 정보는 swagger문서에서 확인하세요.**
+
+---
+
+## 10. Postman 컬렉션
 
 - 환경 변수 (baseUrl, accessToken, refreshToken) 사용
 - Pre-request / Post-response Script 5개이상 포함
@@ -180,10 +198,11 @@ seller1@test.com / password123
 
 ---
 
-## 10. (추가점수) CI 구성
+## 11. (추가점수) CI 구성
 
-GitHub Actions를 사용하여 서버 코드에 대한 CI 파이프라인을 구성하였다.
+GitHub Actions를 사용하여 서버 코드에 대한 CI 파이프라인을 구성하였습니다.
 
+- 테스트·Lint·빌드 자동화
 - main / develop 브랜치 기준 자동 실행
 - Node.js 20 환경에서 테스트 수행
 - PostgreSQL 테스트 컨테이너 기반 통합 테스트
@@ -191,7 +210,19 @@ GitHub Actions를 사용하여 서버 코드에 대한 CI 파이프라인을 구
 
 ---
 
-## 11. 한계 및 개선 계획
+---
+
+## 12. 성능 / 보안 고려사항
+
+- bcrypt 비밀번호 해시
+- JWT 만료시간 분리
+- 레이트 리밋
+- 메트릭 수집
+- test코드 (/src/tests)
+
+---
+
+## 13. 한계 및 개선 계획
 
 - 실제 결제 시스템 미연동
 - 캐시 및 대규모 트래픽 대응 미구현

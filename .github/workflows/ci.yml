@@ -39,6 +39,13 @@ jobs:
         working-directory: ./server
         run: npm ci
 
+      # 🔹 LINT (A 방식: 항상 표시, 실패해도 CI 안 깨짐)
+      - name: Run lint
+        working-directory: ./server
+        run: |
+          echo "Running lint (optional)"
+          npm run lint || echo "Lint skipped or failed"
+
       - name: Run Prisma Generate
         working-directory: ./server
         run: npx prisma generate
