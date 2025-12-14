@@ -172,17 +172,18 @@ seller1@test.com / password123
 
 ## 9. 주요 엔드포인트 요약
 
-| Method | Endpoint      | 설명                              | 인증 |
-| ------ | ------------- | --------------------------------- | ---- |
-| POST   | /auth/login   | 로그인 (JWT 발급)                 | X    |
-| POST   | /users/signup | 회원가입 (비밀번호 bcrypt해시)    | X    |
-| GET    | /users/me     | 내 정보 조회                      | O    |
-| GET    | /books        | 도서 목록 조회 (쿼리/페이징/정렬) | X    |
-| GET    | /books/{id}   | 도서 상세 조회                    | X    |
-| POST   | /books        | 도서 등록 (SELLER/ADMIN)          | O    |
-| POST   | /cart/items   | 장바구니 상품 추가                | O    |
-| POST   | /orders       | 주문 생성                         | O    |
-| GET    | /health       | 서버 헬스 체크                    | X    |
+| 영역 | 메서드 & 경로 | 설명 | 인증 |
+| --- | --- | --- | --- |
+| 인증 | `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout` | 로그인, access token 재발급, 로그아웃/refresh 토큰 폐기 | X (로그인 제외 요청은 refresh 토큰 필요) |
+| 사용자 | `POST /users/signup`, `GET/PATCH/DELETE /users/me` | 가입, 내 정보 조회·수정·탈퇴 | 회원가입 X / 프로필 O |
+| 개인목록 | `GET /users/me/reviews`, `GET /users/me/favorites` | 내가 작성한 리뷰 및 찜한 도서 목록 조회 | O |
+| 도서 | `GET/POST /books`, `GET/PATCH/DELETE /books/{id}`, `GET /books/{id}/stats` | 공개 목록/상세 조회와 판매자·관리자용 등록/수정/삭제, 도서별 통계 | 조회 X / 등록·수정·삭제(판매자, 관리자) O |
+| 리뷰 | `GET/POST /books/{id}/reviews`, `PATCH/DELETE /reviews/{id}` | 도서 리뷰 조회/작성 및 개별 리뷰 수정/삭제 | 조회 X / 작성·수정·삭제 O |
+| 찜 | `POST /books/{id}/favorite`, `DELETE /books/{id}/favorite` | 도서 찜 추가/해제 | O |
+| 장바구니 | `GET/DELETE /cart`, `POST /cart/items`, `PATCH/DELETE /cart/items/{itemId}` | 장바구니 조회/비우기 및 아이템 추가·수량 변경·삭제 | O |
+| 주문 | `POST /orders`, `GET /orders`, `GET /orders/{id}`, `POST /orders/{id}/cancel` | 주문 생성, 내 주문 목록/상세, 주문 취소 | O |
+| 관리자 | `GET /admin/users`, `PATCH/DELETE /admin/users/{id}`, `GET /admin/orders`, `PATCH /admin/orders/{id}/status` | 관리자 전용 사용자·주문 관리 | O (ADMIN) |
+| 모니터링 | `GET /health`, `GET /metrics`, `POST /metrics/reset` | 헬스 체크 및 메트릭 조회/초기화 | 헬스 X / 메트릭 O(내부) |
 
 **추가 정보는 swagger문서 혹은 postman에서 확인하세요.**
 
@@ -258,6 +259,11 @@ Authorization: Bearer <token>
 - 헬스체크: GET /health :인증 없이 200 반환 + 버전, 빌드시간 등 포함
 - 메트릭 수집
 - test코드 (/src/tests)
+
+  
+### 로깅 및 에러 처리
+- morgan 미들웨어를 사용하여 모든 요청에 대해 메서드, 경로, 상태 코드, 지연 시간을 로그로 기록합니다.
+- 서버 내부 에러 발생 시 스택 트레이스를 서버 로그에 남기되, 클라이언트 응답에는 민감한 정보가 노출되지 않도록 처리했습니다.
 
 ---
 
