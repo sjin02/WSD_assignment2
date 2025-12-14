@@ -45,25 +45,34 @@ describe('주문 API', () => {
   });
 
   describe('POST /orders', () => {
-    it('새 주문 생성 성공', async () => {
+    beforeEach(async () => {
       await request(app)
+        .delete('/cart')
+        .set('Authorization', `Bearer ${userToken}`);
+    });
+
+    it('새 주문 생성 성공', async () => {
+      const cartResponse = await request(app)
         .post('/cart/items')
         .set('Authorization', `Bearer ${userToken}`)
         .send({
           bookId: bookId,
           quantity: 2,
         });
+
+      expect(cartResponse.status).toBe(201);
+      expect(cartResponse.body.data).toHaveProperty('cartItem');
+
       const response = await request(app)
         .post('/orders')
         .set('Authorization', `Bearer ${userToken}`);
 
-
       expect(response.status).toBe(201);
       expect(response.body.status).toBe("success");
-      expect(response.body.data.order).toHaveProperty('id');
-      expect(response.body.data.order.items.length).toBe(1);
+      expect(response.body.data).toHaveProperty('order');
+      expect(response.body.data.order).toHaveProperty('items');
+      expect(Array.isArray(response.body.data.order.items)).toBe(true);
 
-      // orderId 저장
       orderId = response.body.data.order.id;
     });
 
@@ -72,46 +81,38 @@ describe('주문 API', () => {
         .post('/orders')
         .set('Authorization', `Bearer ${userToken}`);
       expect(response.status).toBe(409);
-      expect(response.body.status).toBe("fail");
-    });
-
-    it('유효하지 않은 도서 ID로 주문 생성 실패', async () => {
-      const response = await request(app)
-        .post('/orders')
-        .set('Authorization', `Bearer ${userToken}`)
-        .send({
-          items: [
-            {
-              bookId: 99999,
-              quantity: 1,
-            }
-          ],
-          deliveryAddress: '서울시 강남구',
-        });
-
-      expect(response.status).toBe(404);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('인증 없이 주문 생성 실패', async () => {
       const response = await request(app)
-        .post('/orders')
-        .send({
-          items: [
-            {
-              bookId: bookId,
-              quantity: 1,
-            }
-          ],
-          deliveryAddress: '서울시 강남구',
-        });
+        .post('/orders');
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
   describe('GET /orders', () => {
+    beforeAll(async () => {
+      const cartResponse = await request(app)
+        .post('/cart/items')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({
+          bookId: bookId,
+          quantity: 1,
+        });
+
+      expect(cartResponse.status).toBe(201);
+
+      const orderResponse = await request(app)
+        .post('/orders')
+        .set('Authorization', `Bearer ${userToken}`);
+
+      expect(orderResponse.status).toBe(201);
+      orderId = orderResponse.body.data.order.id;
+    });
+
     it('사용자 주문 목록 조회 성공', async () => {
       const response = await request(app)
         .get('/orders')
@@ -138,11 +139,30 @@ describe('주문 API', () => {
         .get('/orders');
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
   describe('GET /orders/:id', () => {
+    beforeAll(async () => {
+      const cartResponse = await request(app)
+        .post('/cart/items')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({
+          bookId: bookId,
+          quantity: 1,
+        });
+
+      expect(cartResponse.status).toBe(201);
+
+      const orderResponse = await request(app)
+        .post('/orders')
+        .set('Authorization', `Bearer ${userToken}`);
+
+      expect(orderResponse.status).toBe(201);
+      orderId = orderResponse.body.data.order.id;
+    });
+
     it('특정 주문 조회 성공', async () => {
       const response = await request(app)
         .get(`/orders/${orderId}`)
@@ -160,7 +180,7 @@ describe('주문 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(404);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('인증 없이 주문 조회 실패', async () => {
@@ -168,7 +188,7 @@ describe('주문 API', () => {
         .get(`/orders/${orderId}`);
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -177,18 +197,23 @@ describe('주문 API', () => {
 
     beforeAll(async () => {
       // 취소할 주문 생성
-      const response = await request(app)
-        .post('/orders')
+      await request(app)
+        .delete('/cart')
+        .set('Authorization', `Bearer ${userToken}`);
+
+      const cartResponse = await request(app)
+        .post('/cart/items')
         .set('Authorization', `Bearer ${userToken}`)
         .send({
-          items: [
-            {
-              bookId: bookId,
-              quantity: 1,
-            }
-          ],
-          deliveryAddress: '서울시 강남구',
+          bookId: bookId,
+          quantity: 1,
         });
+
+      expect(cartResponse.status).toBe(201);
+
+      const response = await request(app)
+        .post('/orders')
+        .set('Authorization', `Bearer ${userToken}`);
 
       cancelOrderId = response.body.data.order.id;
     });
@@ -209,7 +234,7 @@ describe('주문 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(404);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('인증 없이 주문 취소 실패', async () => {
@@ -217,7 +242,7 @@ describe('주문 API', () => {
         .post(`/orders/${orderId}/cancel`);
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 });

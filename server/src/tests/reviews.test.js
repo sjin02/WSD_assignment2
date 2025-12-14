@@ -116,7 +116,7 @@ describe('리뷰 API', () => {
         });
 
       expect(response.status).toBe(403);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('존재하지 않는 리뷰 수정 실패', async () => {
@@ -128,7 +128,7 @@ describe('리뷰 API', () => {
         });
 
       expect(response.status).toBe(404);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('유효하지 않은 평점으로 수정 실패', async () => {
@@ -140,7 +140,7 @@ describe('리뷰 API', () => {
         });
 
       expect(response.status).toBe(422);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('인증 없이 리뷰 수정 실패', async () => {
@@ -151,7 +151,7 @@ describe('리뷰 API', () => {
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -197,7 +197,7 @@ describe('리뷰 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(403);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('존재하지 않는 리뷰 삭제 실패', async () => {
@@ -206,7 +206,7 @@ describe('리뷰 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(404);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('인증 없이 리뷰 삭제 실패', async () => {
@@ -214,7 +214,7 @@ describe('리뷰 API', () => {
         .delete(`/reviews/${reviewId}`);
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 });

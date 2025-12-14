@@ -61,7 +61,7 @@ describe('사용자 API', () => {
         });
 
       expect(response.status).toBe(409);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('필수 필드 누락 시 회원가입 실패', async () => {
@@ -72,7 +72,7 @@ describe('사용자 API', () => {
         });
 
       expect(response.status).toBe(422);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('유효하지 않은 이메일 형식으로 회원가입 실패', async () => {
@@ -85,7 +85,7 @@ describe('사용자 API', () => {
         });
 
       expect(response.status).toBe(422);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -106,7 +106,7 @@ describe('사용자 API', () => {
         .get('/users/me');
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('유효하지 않은 토큰으로 사용자 정보 조회 실패', async () => {
@@ -115,7 +115,7 @@ describe('사용자 API', () => {
         .set('Authorization', 'Bearer invalid-token');
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -153,7 +153,7 @@ describe('사용자 API', () => {
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -183,19 +183,25 @@ describe('사용자 API', () => {
         .delete('/users/me');
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
   describe('GET /users/me/reviews', () => {
     it('사용자 리뷰 목록 조회 성공', async () => {
       const response = await request(app)
-        .get('/users/me/reviews')
+        .get('/users/me/reviews?page=1&limit=10')
         .set('Authorization', `Bearer ${accessToken}`);
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe("success");
-      expect(Array.isArray(response.body.data.reviews)).toBe(true);
+
+      expect(response.body.data).toHaveProperty('items');
+      expect(Array.isArray(response.body.data.items)).toBe(true);
+
+      expect(response.body.data).toHaveProperty('meta');
+      expect(response.body.data.meta).toHaveProperty('page');
+      expect(response.body.data.meta).toHaveProperty('limit');
     });
 
     it('인증 없이 리뷰 목록 조회 실패', async () => {
@@ -203,9 +209,10 @@ describe('사용자 API', () => {
         .get('/users/me/reviews');
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
+
 
   describe('GET /users/me/favorites', () => {
     it('사용자 찜 목록 조회 성공', async () => {
@@ -223,7 +230,7 @@ describe('사용자 API', () => {
         .get('/users/me/favorites');
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 });

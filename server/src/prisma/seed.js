@@ -4,6 +4,17 @@ import { createBooks } from "./data/books.js";
 import { randomInt, randomPick } from "./data/utils.js";
 
 async function main() {
+  console.log("DB 초기화 중...");
+  await prisma.review.deleteMany();
+  await prisma.favorite.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.cartItem.deleteMany();
+  await prisma.cart.deleteMany();
+  await prisma.refreshToken.deleteMany();
+  await prisma.book.deleteMany();
+  await prisma.user.deleteMany();
+
   console.log("Seeding 시작...");
 
   await createUsers(prisma);

@@ -60,7 +60,7 @@ describe('장바구니 API', () => {
         .get('/cart');
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -76,9 +76,9 @@ describe('장바구니 API', () => {
 
       expect(response.status).toBe(201);
       expect(response.body.status).toBe("success");
+      expect(response.body.data).toHaveProperty('cartItem');
       expect(response.body.data.cartItem.quantity).toBe(2);
 
-      // cartItemId 저장
       cartItemId = response.body.data.cartItem.id;
     });
 
@@ -92,7 +92,7 @@ describe('장바구니 API', () => {
         });
 
       expect(response.status).toBe(404);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('유효하지 않은 수량으로 추가 실패', async () => {
@@ -105,7 +105,7 @@ describe('장바구니 API', () => {
         });
 
       expect(response.status).toBe(422);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('인증 없이 상품 추가 실패', async () => {
@@ -117,11 +117,25 @@ describe('장바구니 API', () => {
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
   describe('PATCH /cart/items/:itemId', () => {
+    beforeEach(async () => {
+      const createResponse = await request(app)
+        .post('/cart/items')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({
+          bookId: bookId,
+          quantity: 1,
+        });
+
+      expect(createResponse.status).toBe(201);
+      expect(createResponse.body.data).toHaveProperty('cartItem');
+      cartItemId = createResponse.body.data.cartItem.id;
+    });
+
     it('장바구니 상품 수량 변경 성공', async () => {
       const response = await request(app)
         .patch(`/cart/items/${cartItemId}`)
@@ -144,7 +158,7 @@ describe('장바구니 API', () => {
         });
 
       expect(response.status).toBe(422);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('존재하지 않는 상품 수량 변경 실패', async () => {
@@ -156,7 +170,7 @@ describe('장바구니 API', () => {
         });
 
       expect(response.status).toBe(404);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('인증 없이 수량 변경 실패', async () => {
@@ -167,11 +181,25 @@ describe('장바구니 API', () => {
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
   describe('DELETE /cart/items/:itemId', () => {
+    beforeEach(async () => {
+      const createResponse = await request(app)
+        .post('/cart/items')
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({
+          bookId: bookId,
+          quantity: 1,
+        });
+
+      expect(createResponse.status).toBe(201);
+      expect(createResponse.body.data).toHaveProperty('cartItem');
+      cartItemId = createResponse.body.data.cartItem.id;
+    });
+
     it('장바구니 상품 삭제 성공', async () => {
       const response = await request(app)
         .delete(`/cart/items/${cartItemId}`)
@@ -187,7 +215,7 @@ describe('장바구니 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(404);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('인증 없이 상품 삭제 실패', async () => {
@@ -195,7 +223,7 @@ describe('장바구니 API', () => {
         .delete('/cart/items/1');
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -225,7 +253,7 @@ describe('장바구니 API', () => {
         .delete('/cart');
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 });

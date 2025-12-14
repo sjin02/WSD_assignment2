@@ -47,7 +47,7 @@ describe('인증 API', () => {
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('잘못된 비밀번호로 로그인 실패', async () => {
@@ -59,7 +59,7 @@ describe('인증 API', () => {
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('이메일 누락 시 로그인 실패', async () => {
@@ -70,7 +70,7 @@ describe('인증 API', () => {
         });
 
       expect(response.status).toBe(422);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('비밀번호 누락 시 로그인 실패', async () => {
@@ -81,7 +81,7 @@ describe('인증 API', () => {
         });
 
       expect(response.status).toBe(422);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -114,7 +114,7 @@ describe('인증 API', () => {
         .post('/auth/refresh');
 
       expect(response.status).toBe(422);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -147,7 +147,7 @@ describe('인증 API', () => {
         .post('/auth/logout');
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('유효하지 않은 토큰으로 로그아웃 실패', async () => {
@@ -156,7 +156,7 @@ describe('인증 API', () => {
         .set('Authorization', 'Bearer invalid-token');
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 });

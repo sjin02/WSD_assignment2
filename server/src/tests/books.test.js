@@ -59,8 +59,10 @@ describe('도서 API', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe("success");
+      expect(response.body.data).toHaveProperty('items');
       expect(Array.isArray(response.body.data.items)).toBe(true);
-      expect(response.body.data.books.length).toBeGreaterThan(0);
+      expect(response.body.data.items.length).toBeGreaterThan(0);
+      expect(response.body.data).toHaveProperty('meta');
     });
 
     it('페이지네이션 지원 확인', async () => {
@@ -98,7 +100,7 @@ describe('도서 API', () => {
         .get('/books/99999');
 
       expect(response.status).toBe(404);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -110,7 +112,7 @@ describe('도서 API', () => {
       expect(response.status).toBe(200);
       expect(response.body.status).toBe("success");
       expect(response.body.data).toHaveProperty('reviewCount');
-expect(response.body.data).toHaveProperty('favoriteCount');
+      expect(response.body.data).toHaveProperty('favoriteCount');
     });
   });
 
@@ -145,7 +147,7 @@ expect(response.body.data).toHaveProperty('favoriteCount');
         });
 
       expect(response.status).toBe(403);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('인증 없이 도서 생성 실패', async () => {
@@ -159,7 +161,7 @@ expect(response.body.data).toHaveProperty('favoriteCount');
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -186,7 +188,7 @@ expect(response.body.data).toHaveProperty('favoriteCount');
         });
 
       expect(response.status).toBe(403);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -197,7 +199,7 @@ expect(response.body.data).toHaveProperty('favoriteCount');
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(403);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
 
     it('판매자 권한으로 도서 삭제 성공', async () => {
@@ -248,7 +250,7 @@ expect(response.body.data).toHaveProperty('favoriteCount');
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -278,7 +280,7 @@ expect(response.body.data).toHaveProperty('favoriteCount');
         .post(`/books/${bookId}/favorite`);
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 
@@ -304,7 +306,7 @@ expect(response.body.data).toHaveProperty('favoriteCount');
         .delete(`/books/${bookId}/favorite`);
 
       expect(response.status).toBe(401);
-      expect(response.body.status).toBe("fail");
+      expect(response.body).toHaveProperty('code');
     });
   });
 });
