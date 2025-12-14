@@ -10,8 +10,8 @@
 ### 문제 정의
 
 온라인 서점 서비스에서 필요한 핵심 기능(회원 관리, 도서 관리, 주문, 리뷰 등)을  
-REST API 형태로 구현하고, 인증/인가, 테스트, 문서화까지 포함한 백엔드 서버를 구축합니다.
-본 프로젝트는 Node.js 서버를 JCloud에 배포하였으며, PM을 사용해 서버 재시작 시에도 자동으로 실행되도록 설정하였습니다. 데이터베이스는 PostgreSQL을 사용합니다.
+REST API 형태로 구현하고, 인증/인가, 테스트, 문서화까지 포함한 백엔드 서버를 구축합니다.  
+본 프로젝트는 Node.js 서버를 JCloud에 배포하였으며, PM을 사용해 서버 재시작 시에도 자동으로 실행되도록 설정하였습니다.   데이터베이스는 PostgreSQL을 사용합니다.  
 /server/docs폴더에 api-design, architecture, db-schema를 넣어두었습니다.
 
 ### 주요 기능
@@ -82,11 +82,7 @@ docker compose up --build
 그러나 JCloud 인스턴스 환경에서 다음과 같은 물리적 제약에 의해 API 컨테이너의 안정적인 실행이 어려운 상황이 발생함.
 
 - 인스턴스 디스크 용량이 매우 제한적임
-- Docker 이미지 빌드 과정에서
-- Node.js 런타임
-- node_modules
-- Prisma engine
-- npm 캐시
+- Docker 이미지 빌드 과정에서 Node.js 런타임, node_modules, Prisma engine, npm 캐시
   등이 누적되어 디스크 공간 부족(ENOSPC) 오류 발생
 
 docker system prune 등 정리 후에도 Prisma 및 Node 이미지 빌드 과정에서 재현됨
@@ -186,6 +182,7 @@ seller1@test.com / password123
 | 모니터링 | `GET /health`, `GET /metrics`, `POST /metrics/reset` | 헬스 체크 및 메트릭 조회/초기화 | 헬스 X / 메트릭 O(내부) |
 
 **추가 정보는 swagger문서 혹은 postman에서 확인하세요.**
+**응답 페이로드, 검색/정렬/페이지네이션 등은 swagger문서보다는 Postman 컬렉션에서 확인해 주세요.(아래 링크있음)**
 
 ---
 
