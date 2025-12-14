@@ -1,6 +1,6 @@
 # Bookstore API
 
-온라인 서점 서비스를 위한 REST API 서버입니다.  
+온라인 서점 서비스를 위한 EXPRESS기반 REST API 서버입니다.  
 사용자/판매자/관리자 인증을 기반으로 도서 조회, 도서 관리, 구매, 리뷰, 찜, 장바구니, 주문 관리, 유저 관리 등의 기능을 제공합니다.
 
 ---
@@ -11,7 +11,8 @@
 
 온라인 서점 서비스에서 필요한 핵심 기능(회원 관리, 도서 관리, 주문, 리뷰 등)을  
 REST API 형태로 구현하고, 인증/인가, 테스트, 문서화까지 포함한 백엔드 서버를 구축합니다.
-본 프로젝트는 Node.js 서버를 JCloud VM에 배포하였으며, 서버 재시작 시에도 자동으로 실행되도록 설정하였습니다. 데이터베이스는 PostgreSQL을 사용합니다.
+본 프로젝트는 Node.js 서버를 JCloud에 배포하였으며, PM을 사용해 서버 재시작 시에도 자동으로 실행되도록 설정하였습니다. 데이터베이스는 PostgreSQL을 사용합니다.
+/server/docs폴더에 api-design, architecture, db-schema를 넣어두었습니다.
 
 ### 주요 기능
 
@@ -111,12 +112,12 @@ docker system prune 등 정리 후에도 Prisma 및 Node 이미지 빌드 과정
 
 ## 4. 배포 정보 (JCloud)
 
-- Base URL: [http://113.198.66.68:10081](http://113.198.66.68:10081)
+- Base URL: http://113.198.66.68:10081
 - Swagger: http://113.198.66.68:10081/api-docs
 - Health: http://113.198.66.68:10081/health
 - Metrics: http://113.198.66.68:10081/metrics
   <br>
-- postman : [https://documenter.getpostman.com/view/48959495/2sB3dTs88x#b7df93a4-69bf-43ea-aa66-c15f178516c9](https://documenter.getpostman.com/view/48959495/2sB3dTs88x#b7df93a4-69bf-43ea-aa66-c15f178516c9)
+- postman : https://documenter.getpostman.com/view/48959495/2sB3dTs88x#b7df93a4-69bf-43ea-aa66-c15f178516c9
 
 ---
 
@@ -248,17 +249,19 @@ Authorization: Bearer <token>
 
 ---
 
-## 12. 성능 / 보안 고려사항
+## 13. 성능 / 보안 고려사항
 
 - bcrypt 비밀번호 해시
 - JWT 만료시간 분리
 - 레이트 리밋
+- CORS 설정
+- 헬스체크: GET /health :인증 없이 200 반환 + 버전, 빌드시간 등 포함
 - 메트릭 수집
 - test코드 (/src/tests)
 
 ---
 
-## 13. 한계 및 개선 계획
+## 14. 한계 및 개선 계획
 
 - 실제 결제 시스템 미연동
 - 캐시 및 대규모 트래픽 대응 미구현
