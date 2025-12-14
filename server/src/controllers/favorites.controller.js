@@ -43,7 +43,11 @@ export async function getMyFavoritesController(req, res, next) {
       limit: Number(limit),
     });
 
-    res.success(result, 200, "내 찜 목록 조회 완료");
+    res.success(
+      { favorites: result.items, meta: result.meta },
+      200,
+      "내 찜 목록 조회 완료"
+    );
   } catch (err) {
     next(err);
   }

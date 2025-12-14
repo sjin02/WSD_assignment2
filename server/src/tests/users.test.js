@@ -47,8 +47,8 @@ describe('사용자 API', () => {
 
       expect(response.status).toBe(201);
       expect(response.body.status).toBe("success");
-      expect(response.body.data).toHaveProperty('user');
-      expect(response.body.data.user.email).toBe('newuser@test.com');
+      expect(response.body.data).toHaveProperty('email');
+      expect(response.body.data.email).toBe('newuser@test.com')
     });
 
     it('중복된 이메일로 회원가입 실패', async () => {
@@ -97,8 +97,8 @@ describe('사용자 API', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe("success");
-      expect(response.body.data).toHaveProperty('user');
-      expect(response.body.data.user.email).toBe('user1@test.com');
+      expect(response.body.data).toHaveProperty('email');
+      expect(response.body.data.email).toBe('user1@test.com');
     });
 
     it('인증 없이 사용자 정보 조회 실패', async () => {
@@ -130,7 +130,7 @@ describe('사용자 API', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe("success");
-      expect(response.body.data.user.name).toBe('변경된 이름');
+      expect(response.body.data.name).toBe('변경된 이름');
     });
 
     it('비밀번호 수정 성공', async () => {
@@ -160,19 +160,26 @@ describe('사용자 API', () => {
   describe('DELETE /users/me', () => {
     it('사용자 계정 소프트 삭제 성공', async () => {
       // 새 사용자 생성
-      const signupResponse = await request(app)
-        .post('/users/signup')
-        .send({
-          email: 'todelete@test.com',
-          password: 'password123',
-          name: '삭제될 사용자',
-        });
+    const signupResponse = await request(app)
+      .post('/users/signup')
+      .send({
+        email: 'todelete@test.com',
+        password: 'password123',
+        name: '삭제될 사용자',
+      });
 
-      const deleteToken = signupResponse.body.data.accessToken;
+    const loginResponse = await request(app)
+      .post('/auth/login')
+      .send({
+        email: 'todelete@test.com',
+        password: 'password123',
+      });
 
-      const response = await request(app)
-        .delete('/users/me')
-        .set('Authorization', `Bearer ${deleteToken}`);
+    const deleteToken = loginResponse.body.data.accessToken;
+
+    const response = await request(app)
+      .delete('/users/me')
+      .set('Authorization', `Bearer ${deleteToken}`);
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe("success");
@@ -222,6 +229,7 @@ describe('사용자 API', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe("success");
+      expect(response.body.data).toHaveProperty('favorites');
       expect(Array.isArray(response.body.data.favorites)).toBe(true);
     });
 

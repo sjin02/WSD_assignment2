@@ -77,7 +77,7 @@ export async function getMyReviewsController(req, res, next) {
       limit: Number(limit),
     });
 
-    res.success({ reviews: result.items, meta: result.meta }, 200, "내 리뷰 조회 완료");
+    res.success({ items: result.items, meta: result.meta }, 200, "내 리뷰 조회 완료");
   } catch (err) {
     next(err);
   }

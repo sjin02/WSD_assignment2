@@ -48,7 +48,7 @@ export async function getBookByIdController(req, res, next) {
     const bookId = Number(req.params.id);
     const book = await getBookById(bookId);
 
-    return res.success(book, 200, "도서 상세 조회 완료");
+    return res.success({ book }, 200, "도서 상세 조회 완료");
   } catch (err) {
     if (err.message === "BOOK_NOT_FOUND") {
       return res.fail("도서를 찾을 수 없습니다", 404, "RESOURCE_NOT_FOUND");
@@ -97,7 +97,7 @@ export async function getStats(req, res, next) {
 export async function createBookController(req, res, next) {
   try {
     const book = await createBook(req.body);
-    return res.success(book, 201, "도서 등록 완료");
+    return res.success({ book }, 201, "도서 등록 완료");
   } catch (err) {
     next(err);
   }
@@ -111,7 +111,7 @@ export async function updateBookController(req, res, next) {
     const bookId = Number(req.params.id);
     const book = await updateBook(bookId, req.body);
 
-    return res.success(book, 200, "도서 수정 완료");
+    return res.success({ book }, 200, "도서 수정 완료");
   } catch (err) {
     if (err.message === "BOOK_NOT_FOUND") {
       return res.fail("도서를 찾을 수 없습니다", 404, "RESOURCE_NOT_FOUND");
