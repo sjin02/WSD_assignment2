@@ -16,20 +16,90 @@ components:
       bearerFormat: JWT
 
   schemas:
+    # 성공 응답 공통 포맷
     SuccessResponse:
       type: object
       properties:
         status:
           type: string
+          enum: [success]
+          description: 응답 상태 (항상 "success")
           example: success
         message:
           type: string
           nullable: true
+          description: 응답 메시지 (선택적)
+          example: "작업이 성공적으로 완료되었습니다"
         data:
           type: object
+          description: 응답 데이터
       required:
         - status
         - data
+
+    # 실패 응답 공통 포맷 (기본)
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: 에러 발생 시각 (ISO 8601)
+          example: "2025-12-14T11:23:45.237Z"
+        path:
+          type: string
+          description: 요청 경로
+          example: "/auth/login"
+        status:
+          type: integer
+          description: HTTP 상태 코드
+          example: 400
+        code:
+          type: string
+          description: 에러 코드
+          example: "UNAUTHORIZED"
+        message:
+          type: string
+          description: 에러 메시지
+          example: "인증되지 않음"
+      required:
+        - timestamp
+        - path
+        - status
+        - code
+        - message
+
+    # 실패 응답 공통 포맷 (유효성 검증 실패 시 - details 포함)
+    ValidationErrorResponse:
+      allOf:
+        - $ref: "#/components/schemas/ErrorResponse"
+        - type: object
+          properties:
+            details:
+              type: array
+              description: 유효성 검증 실패 상세 정보
+              items:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 필드별 에러 메시지
+                  path:
+                    type: array
+                    items:
+                      type: string
+                    description: 에러가 발생한 필드 경로
+          required:
+            - details
+      example:
+        timestamp: "2025-12-14T11:23:45.237Z"
+        path: "/auth/login"
+        status: 422
+        code: "UNPROCESSABLE_ENTITY"
+        message: "Invalid request data"
+        details:
+          - message: "Required"
+            path: ["email"]
 
 paths:
   /auth/login:
@@ -3162,3 +3232,109 @@ paths:
                 version: 1.0.0
                 buildTime: local
                 uptime: 123.456
+  /metrics:
+    get:
+      tags: [Metrics]
+      summary: 시스템 메트릭 조회 (ADMIN 전용)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 메트릭 정보 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalRequests:
+                    type: number
+                    description: 총 요청 수
+                  totalErrors:
+                    type: number
+                    description: 총 에러 수
+                  avgLatency:
+                    type: number
+                    description: 평균 지연 시간 (ms)
+                  errorRate:
+                    type: number
+                    description: 에러율 (%)
+                  requestsPerMinute:
+                    type: number
+                    description: 분당 평균 요청 수
+                  uptime:
+                    type: number
+                    description: 서버 가동 시간 (초)
+              example:
+                totalRequests: 1250
+                totalErrors: 15
+                avgLatency: 45.2
+                errorRate: 1.2
+                requestsPerMinute: 25.5
+                uptime: 3600
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/metrics"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (ADMIN만 가능)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/metrics"
+                status: 403
+                code: FORBIDDEN
+                message: 권한이 없습니다
+
+  /metrics/reset:
+    post:
+      tags: [Metrics]
+      summary: 메트릭 초기화 (ADMIN 전용)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 메트릭 초기화 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: 메트릭이 초기화되었습니다.
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/metrics/reset"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (ADMIN만 가능)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/metrics/reset"
+                status: 403
+                code: FORBIDDEN
+                message: 권한이 없습니다

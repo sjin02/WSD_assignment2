@@ -11,7 +11,7 @@
 
 온라인 서점 서비스에서 필요한 핵심 기능(회원 관리, 도서 관리, 주문, 리뷰 등)을  
 REST API 형태로 구현하고, 인증/인가, 테스트, 문서화까지 포함한 백엔드 서버를 구축합니다.
-본 프로젝트는 Node.js 서버를 JCloud VM에 배포하였으며, 서버 재시작 시에도 자동으로 실행되도록 설정하였습니다. 데이터베이스는 PostgreSQL을 사용한다.
+본 프로젝트는 Node.js 서버를 JCloud VM에 배포하였으며, 서버 재시작 시에도 자동으로 실행되도록 설정하였습니다. 데이터베이스는 PostgreSQL을 사용합니다.
 
 ### 주요 기능
 
@@ -116,7 +116,7 @@ docker system prune 등 정리 후에도 Prisma 및 Node 이미지 빌드 과정
 - Health: http://113.198.66.68:10081/health
 - Metrics: http://113.198.66.68:10081/metrics
   <br>
-- postman참고 : [postman문서](https://documenter.getpostman.com/view/48959495/2sB3dTs88x#b7df93a4-69bf-43ea-aa66-c15f178516c9)
+- postman : [https://documenter.getpostman.com/view/48959495/2sB3dTs88x#b7df93a4-69bf-43ea-aa66-c15f178516c9](https://documenter.getpostman.com/view/48959495/2sB3dTs88x#b7df93a4-69bf-43ea-aa66-c15f178516c9)
 
 ---
 
@@ -185,7 +185,7 @@ seller1@test.com / password123
 | POST   | /orders       | 주문 생성                         | O    |
 | GET    | /health       | 서버 헬스 체크                    | X    |
 
-**추가 정보는 swagger문서에서 확인하세요.**
+**추가 정보는 swagger문서 혹은 postman에서 확인하세요.**
 
 ---
 
@@ -209,6 +209,42 @@ GitHub Actions를 사용하여 서버 코드에 대한 CI 파이프라인을 구
 - Prisma Client 자동 생성 포함
 
 ---
+
+## 12. (추가점수) 모니터링 지표(요청 수, 평균 지연, 에러율)
+
+서버 요청 수, 평균 지연 시간, 에러율을 확인할 수 있는 관리자 전용 모니터링 대시보드입니다.
+
+### 수집 지표
+
+- totalRequests: 총 요청 수
+- avgLatency: 평균 응답 지연(ms)
+- errorRate: 에러율(%)
+- requestsPerMinute: 분당 평균 요청 수
+- uptime: 서버 가동 시간(초)
+
+### 접근 방법
+
+1. 서버 실행 후 브라우저 접속
+   [http://113.198.66.68:10081/monitoring-dashboard.html](http://113.198.66.68:10081/monitoring-dashboard.html)
+
+2. 관리자 계정으로 로그인하여 JWT 발급(swagger 혹은 postman이용)
+
+3. 브라우저 콘솔(F12)에 토큰 저장
+
+```js
+localStorage.setItem("accessToken", "ADMIN_JWT_TOKEN");
+```
+
+4. 대시보드가 /metrics API를 자동 호출하여 지표 표시
+
+**보안**
+
+/metrics API는 ADMIN 권한 필요
+Authorization 헤더 사용
+
+```js
+Authorization: Bearer <token>
+```
 
 ---
 

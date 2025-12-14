@@ -2,8 +2,11 @@ import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
+import path from "path";
+import { fileURLToPath } from "url";
 
 import responseMiddleware from "./middlewares/response.middleware.js";
+import { metricsMiddleware } from "./middlewares/metrics.middleware.js";
 
 import authRouter from "./routes/auth.route.js";
 import booksRouter from "./routes/books.route.js";
@@ -13,6 +16,7 @@ import errorHandler  from "./middlewares/error.middleware.js";
 import reviewsRouter from "./routes/review.route.js";
 import cartRouter from "./routes/cart.route.js";
 import ordersRouter from "./routes/orders.route.js";
+import metricsRouter from "./routes/metrics.route.js";
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger.js";
@@ -30,6 +34,7 @@ app.use(cors({
 app.use(express.json({ limit: "1mb" })); // JSON 요청 바디 파싱, 최대 크기 1MB
 app.use(express.urlencoded({ extended: true })); // URL-encoded 요청 바디 파싱
 app.use(morgan("dev")); // 요청 로깅
+app.use(metricsMiddleware); // 메트릭 수집
 app.use(responseMiddleware);
 
 // 공용 라우터에 대한 속도 제한 설정
@@ -54,6 +59,10 @@ app.use("/health", publicLimiter);
 //app.use("/api-docs", publicLimiter);
 app.use("/books", publicLimiter);
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(__dirname));
+
 // 라우터
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/users", usersRouter);
@@ -63,6 +72,8 @@ app.use("/books", booksRouter);
 app.use("/reviews", reviewsRouter);
 app.use("/cart", cartRouter);
 app.use("/orders", ordersRouter);
+app.use("/metrics", metricsRouter);
+
 
 
 // 헬스 체크
