@@ -111,7 +111,6 @@ docker system prune 등 정리 후에도 Prisma 및 Node 이미지 빌드 과정
 - Base URL: http://113.198.66.68:10081
 - Swagger: http://113.198.66.68:10081/api-docs
 - Health: http://113.198.66.68:10081/health
-- Metrics: http://113.198.66.68:10081/metrics
   <br>
 ---
 
