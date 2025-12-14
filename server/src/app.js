@@ -23,9 +23,10 @@ dotenv.config();
 const app = express();
 
 app.use(cors({
-  origin: "http://localhost:5173", // React 주소
-  credentials: true
+  origin: "*",
+  credentials: false
 }));
+
 app.use(express.json({ limit: "1mb" })); // JSON 요청 바디 파싱, 최대 크기 1MB
 app.use(express.urlencoded({ extended: true })); // URL-encoded 요청 바디 파싱
 app.use(morgan("dev")); // 요청 로깅
@@ -40,9 +41,17 @@ app.get("/", (req, res) => {
   res.status(200).send("ROOT OK");
 });
 
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api-docs")) {
+    cors({ origin: "*", credentials: false })(req, res, next);
+  } else {
+    cors({ origin: true, credentials: true })(req, res, next);
+  }
+});
+
 app.use("/auth", publicLimiter);
 app.use("/health", publicLimiter);
-app.use("/api-docs", publicLimiter);
+//app.use("/api-docs", publicLimiter);
 app.use("/books", publicLimiter);
 
 // 라우터

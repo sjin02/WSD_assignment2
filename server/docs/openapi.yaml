@@ -5,8 +5,8 @@ info:
   description: |
     온라인 서점 REST API 명세서. 실제 응답 형식과 오류 코드를 정확하게 반영합니다.
 servers:
-  - url: http://localhost:5000
-    description: Local server
+  - url: http://113.198.66.68:10081
+    description: Jcloud server
 
 components:
   securitySchemes:
