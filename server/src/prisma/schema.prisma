@@ -18,8 +18,11 @@ enum UserRole {
 enum OrderStatus {
   PENDING
   PAID
+  SHIPPED
+  DONE
   CANCELLED
 }
+
 
 // =====================
 // Users
@@ -38,7 +41,6 @@ model User {
   orders        Order[]
   reviews       Review[]
   favorites     Favorite[]
-  library       Library[]
   refreshTokens RefreshToken[]
 }
 
@@ -62,7 +64,6 @@ model Book {
   orderItems OrderItem[]
   reviews    Review[]
   favorites  Favorite[]
-  library    Library[]
 }
 
 // =====================
@@ -146,19 +147,6 @@ model Favorite {
   @@unique([userId, bookId])
 }
 
-// =====================
-// Library (내 서재)
-// =====================
-model Library {
-  id     Int @id @default(autoincrement())
-  userId Int
-  bookId Int
-
-  user User @relation(fields: [userId], references: [id])
-  book Book @relation(fields: [bookId], references: [id])
-
-  @@unique([userId, bookId])
-}
 
 // =====================
 // Refresh Tokens

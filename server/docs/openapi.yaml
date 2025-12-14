@@ -3,18 +3,20 @@ info:
   title: Bookstore API
   version: 1.0.0
   description: |
-    온라인 서점 REST API 명세서. 표준 응답 포맷을 사용하며, 오류 코드는 프로젝트 표준 매핑을 따른다.
+    온라인 서점 REST API 명세서. 실제 응답 형식과 오류 코드를 정확하게 반영합니다.
 servers:
   - url: http://localhost:5000
     description: Local server
+
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
   schemas:
-    SuccessEnvelope:
+    SuccessResponse:
       type: object
       properties:
         status:
@@ -28,165 +30,7 @@ components:
       required:
         - status
         - data
-    ErrorEnvelope:
-      type: object
-      properties:
-        status:
-          type: string
-          example: fail
-        statusCode:
-          type: integer
-          example: 422
-        code:
-          type: string
-          example: UNPROCESSABLE_ENTITY
-        message:
-          type: string
-          example: 처리할 수 없는 요청 내용(형식은 맞지만 논리적 오류)
-        timestamp:
-          type: string
-          format: date-time
-        path:
-          type: string
-        details:
-          type: array
-          items:
-            type: string
-      required:
-        - status
-        - statusCode
-        - code
-        - message
-        - timestamp
-        - path
-    LoginRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-      required:
-        - email
-        - password
-    AuthTokens:
-      type: object
-      properties:
-        accessToken:
-          type: string
-        refreshToken:
-          type: string
-      required:
-        - accessToken
-        - refreshToken
-    SignupRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-        name:
-          type: string
-      required:
-        - email
-        - password
-        - name
-    BookInput:
-      type: object
-      properties:
-        title:
-          type: string
-        author:
-          type: string
-        price:
-          type: number
-        stock:
-          type: integer
-        isbn:
-          type: string
-        description:
-          type: string
-      required:
-        - title
-        - author
-        - price
-        - stock
-        - isbn
-    ReviewInput:
-      type: object
-      properties:
-        rating:
-          type: integer
-          minimum: 1
-          maximum: 5
-        content:
-          type: string
-      required:
-        - rating
-        - content
-    CartItemInput:
-      type: object
-      properties:
-        bookId:
-          type: integer
-        quantity:
-          type: integer
-          minimum: 1
-      required:
-        - bookId
-        - quantity
-  responses:
-    BadRequest:
-      description: 400 BAD_REQUEST | VALIDATION_FAILED | INVALID_QUERY_PARAM
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorEnvelope'
-    Unauthorized:
-      description: 401 UNAUTHORIZED | TOKEN_EXPIRED
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorEnvelope'
-    Forbidden:
-      description: 403 FORBIDDEN
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorEnvelope'
-    NotFound:
-      description: 404 RESOURCE_NOT_FOUND | USER_NOT_FOUND
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorEnvelope'
-    Conflict:
-      description: 409 DUPLICATE_RESOURCE | STATE_CONFLICT
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorEnvelope'
-    Unprocessable:
-      description: 422 UNPROCESSABLE_ENTITY
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorEnvelope'
-    TooManyRequests:
-      description: 429 TOO_MANY_REQUESTS
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorEnvelope'
-    ServerError:
-      description: 500 INTERNAL_SERVER_ERROR | DATABASE_ERROR | UNKNOWN_ERROR
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/ErrorEnvelope'
+
 paths:
   /auth/login:
     post:
@@ -197,25 +41,99 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/LoginRequest'
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+              required:
+                - email
+                - password
       responses:
-        '200':
+        "200":
           description: 로그인 성공
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/SuccessEnvelope'
-                  - type: object
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  message:
+                    type: string
+                    example: Login successful
+                  data:
+                    type: object
                     properties:
-                      data:
-                        $ref: '#/components/schemas/AuthTokens'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+              example:
+                status: success
+                message: Login successful
+                data:
+                  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        "401":
+          description: 인증 실패 (이메일 또는 비밀번호 불일치)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/auth/login"
+                status: 401
+                code: UNAUTHORIZED
+                message: 이메일이 올바르지 않습니다
+        "422":
+          description: 유효하지 않은 요청 데이터
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: object
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/auth/login"
+                status: 422
+                code: UNPROCESSABLE_ENTITY
+                message: Invalid request data
+                details:
+                  - message: Required
+                    path: ["email"]
+
   /auth/refresh:
     post:
       tags: [Auth]
@@ -232,23 +150,74 @@ paths:
               required:
                 - refreshToken
       responses:
-        '200':
+        "200":
           description: 토큰 재발급 성공
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/SuccessEnvelope'
-                  - type: object
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
                     properties:
-                      data:
-                        $ref: '#/components/schemas/AuthTokens'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                      accessToken:
+                        type: string
+              example:
+                status: success
+                message: Access token 재발급 성공
+                data:
+                  accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        "401":
+          description: 유효하지 않은 refresh token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/auth/refresh"
+                status: 401
+                code: UNAUTHORIZED
+                message: 유효하지 않은 토큰
+        "404":
+          description: 사용자를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/auth/refresh"
+                status: 404
+                code: USER_NOT_FOUND
+                message: 사용자 없음
+
   /auth/logout:
     post:
       tags: [Auth]
@@ -256,18 +225,47 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: 로그아웃 완료
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 로그아웃 완료
+                data: {}
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/auth/logout"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+
   /users/signup:
     post:
       tags: [Users]
@@ -277,20 +275,98 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SignupRequest'
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                name:
+                  type: string
+              required:
+                - email
+                - password
+                - name
       responses:
-        '201':
+        "201":
           description: 회원 가입 완료
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      email:
+                        type: string
+              example:
+                status: success
+                message: 회원가입 완료
+                data:
+                  id: 1
+                  email: user@example.com
+        "409":
+          description: 이미 존재하는 이메일
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/users/signup"
+                status: 409
+                code: DUPLICATE_RESOURCE
+                message: 이미 존재하는 이메일
+        "422":
+          description: 유효하지 않은 요청 데이터
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: object
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/users/signup"
+                status: 422
+                code: UNPROCESSABLE_ENTITY
+                message: Invalid request data
+                details:
+                  - message: Required
+                    path: ["email"]
+
   /users/me:
     get:
       tags: [Users]
@@ -298,18 +374,61 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: 내 정보 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                    nullable: true
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      email:
+                        type: string
+                      name:
+                        type: string
+                      role:
+                        type: string
+              example:
+                status: success
+                message: null
+                data:
+                  id: 1
+                  email: user@example.com
+                  name: 홍길동
+                  role: CUSTOMER
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/users/me"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+
     patch:
       tags: [Users]
       summary: 내 정보 수정
@@ -321,106 +440,339 @@ paths:
           application/json:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                name:
+                  type: string
       responses:
-        '200':
+        "200":
           description: 수정 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      name:
+                        type: string
+              example:
+                status: success
+                message: 회원 정보 수정 완료
+                data:
+                  id: 1
+                  name: 홍길동
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/users/me"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "422":
+          description: 유효하지 않은 요청 데이터
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: object
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/users/me"
+                status: 422
+                code: UNPROCESSABLE_ENTITY
+                message: Invalid request data
+                details: []
+
     delete:
       tags: [Users]
       summary: 회원 탈퇴
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: 삭제 완료
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 회원 탈퇴 완료
+                data: {}
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/users/me"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+
   /users/me/reviews:
     get:
       tags: [Reviews]
       summary: 내가 작성한 리뷰 목록 조회
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
       responses:
-        '200':
+        "200":
           description: 리뷰 목록 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          type: object
+                      meta:
+                        type: object
+              example:
+                status: success
+                message: 내 리뷰 조회 완료
+                data:
+                  items: []
+                  meta:
+                    page: 1
+                    limit: 10
+                    total: 0
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/users/me/reviews"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+
   /users/me/favorites:
     get:
       tags: [Favorites]
       summary: 내가 찜한 도서 목록 조회
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
       responses:
-        '200':
+        "200":
           description: 찜 목록 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      favorites:
+                        type: array
+                        items:
+                          type: object
+                      meta:
+                        type: object
+              example:
+                status: success
+                message: 내 찜 목록 조회 완료
+                data:
+                  favorites: []
+                  meta:
+                    page: 1
+                    limit: 10
+                    total: 0
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/users/me/favorites"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+
   /books:
     get:
       tags: [Books]
       summary: 도서 목록 조회
       parameters:
-        - in: query
-          name: page
-          schema: { type: integer, default: 1 }
-        - in: query
-          name: limit
-          schema: { type: integer, default: 20 }
-        - in: query
-          name: q
-          schema: { type: string }
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            default: createdAt
+        - name: order
+          in: query
+          schema:
+            type: string
+            default: desc
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
       responses:
-        '200':
+        "200":
           description: 목록 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 도서 목록 조회 완료
+                data:
+                  items: []
+                  meta:
+                    page: 1
+                    limit: 20
+                    total: 0
+
     post:
       tags: [Books]
-      summary: 새 도서 등록
+      summary: 새 도서 등록 (SELLER, ADMIN만 가능)
       security:
         - bearerAuth: []
       requestBody:
@@ -428,20 +780,129 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookInput'
+              type: object
+              properties:
+                title:
+                  type: string
+                author:
+                  type: string
+                price:
+                  type: number
+                stock:
+                  type: integer
+                isbn:
+                  type: string
+                description:
+                  type: string
+              required:
+                - title
+                - author
+                - price
+                - stock
+                - isbn
       responses:
-        '201':
+        "201":
           description: 등록 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      book:
+                        type: object
+              example:
+                status: success
+                message: 도서 등록 완료
+                data:
+                  book:
+                    id: 1
+                    title: 클린 코드
+                    author: 로버트 C. 마틴
+                    price: 33000
+                    stock: 100
+                    isbn: "9788966260959"
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (SELLER 또는 ADMIN만 가능)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books"
+                status: 403
+                code: FORBIDDEN
+                message: 권한이 없습니다
+        "422":
+          description: 유효하지 않은 요청 데이터
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: object
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books"
+                status: 422
+                code: UNPROCESSABLE_ENTITY
+                message: 입력값 검증 실패
+                details: []
+
   /books/{id}:
     get:
       tags: [Books]
@@ -450,72 +911,318 @@ paths:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           description: 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      book:
+                        type: object
+              example:
+                status: success
+                message: 도서 상세 조회 완료
+                data:
+                  book:
+                    id: 1
+                    title: 클린 코드
+                    author: 로버트 C. 마틴
+                    price: 33000
+                    stock: 100
+                    isbn: "9788966260959"
+        "404":
+          description: 도서를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/999"
+                status: 404
+                code: RESOURCE_NOT_FOUND
+                message: 도서를 찾을 수 없습니다
+
     patch:
       tags: [Books]
-      summary: 도서 정보 수정
+      summary: 도서 정보 수정 (SELLER, ADMIN만 가능)
       security:
         - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookInput'
+              type: object
+              properties:
+                title:
+                  type: string
+                author:
+                  type: string
+                price:
+                  type: number
+                stock:
+                  type: integer
+                isbn:
+                  type: string
+                description:
+                  type: string
       responses:
-        '200':
+        "200":
           description: 수정 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      book:
+                        type: object
+              example:
+                status: success
+                message: 도서 수정 완료
+                data:
+                  book:
+                    id: 1
+                    title: 클린 코드
+                    author: 로버트 C. 마틴
+                    price: 35000
+                    stock: 90
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/1"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (SELLER 또는 ADMIN만 가능)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/1"
+                status: 403
+                code: FORBIDDEN
+                message: 권한이 없습니다
+        "404":
+          description: 도서를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/999"
+                status: 404
+                code: RESOURCE_NOT_FOUND
+                message: 도서를 찾을 수 없습니다
+
     delete:
       tags: [Books]
-      summary: 도서 삭제
+      summary: 도서 삭제 (SELLER, ADMIN만 가능)
       security:
         - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           description: 삭제 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 도서 삭제 완료
+                data: {}
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/1"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (SELLER 또는 ADMIN만 가능)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/1"
+                status: 403
+                code: FORBIDDEN
+                message: 권한이 없습니다
+        "404":
+          description: 도서를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/999"
+                status: 404
+                code: RESOURCE_NOT_FOUND
+                message: 도서를 찾을 수 없습니다
+
+  /books/{id}/stats:
+    get:
+      tags: [Books]
+      summary: 도서 통계 조회
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: 통계 조회 성공
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 도서 통계 조회 완료
+                data:
+                  averageRating: 4.5
+                  reviewCount: 10
+                  favoriteCount: 25
+
   /books/{id}/reviews:
     get:
       tags: [Reviews]
@@ -524,20 +1231,42 @@ paths:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
       responses:
-        '200':
+        "200":
           description: 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 리뷰 목록 조회 완료
+                data:
+                  items: []
+                  meta:
+                    page: 1
+                    limit: 10
+                    total: 0
+
     post:
       tags: [Reviews]
       summary: 리뷰 작성
@@ -547,26 +1276,103 @@ paths:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReviewInput'
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                content:
+                  type: string
+              required:
+                - rating
+                - content
       responses:
-        '201':
+        "201":
           description: 작성 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      review:
+                        type: object
+              example:
+                status: success
+                message: 리뷰 작성 완료
+                data:
+                  review:
+                    id: 1
+                    bookId: 1
+                    userId: 1
+                    rating: 5
+                    content: 정말 좋은 책입니다
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/1/reviews"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "422":
+          description: 유효하지 않은 요청 데이터
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: object
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/1/reviews"
+                status: 422
+                code: UNPROCESSABLE_ENTITY
+                message: Invalid request data
+                details: []
+
   /reviews/{id}:
     patch:
       tags: [Reviews]
@@ -577,26 +1383,116 @@ paths:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReviewInput'
+              type: object
+              properties:
+                rating:
+                  type: integer
+                  minimum: 1
+                  maximum: 5
+                content:
+                  type: string
       responses:
-        '200':
+        "200":
           description: 수정 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      review:
+                        type: object
+              example:
+                status: success
+                message: 리뷰 수정 완료
+                data:
+                  review:
+                    id: 1
+                    rating: 4
+                    content: 수정된 리뷰입니다
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/reviews/1"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (본인의 리뷰만 수정 가능)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/reviews/1"
+                status: 403
+                code: FORBIDDEN
+                message: 권한 없음
+        "404":
+          description: 리뷰를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/reviews/999"
+                status: 404
+                code: RESOURCE_NOT_FOUND
+                message: 리뷰를 찾을 수 없습니다
+
     delete:
       tags: [Reviews]
       summary: 리뷰 삭제
@@ -606,20 +1502,96 @@ paths:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           description: 삭제 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 리뷰 삭제 완료
+                data: {}
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/reviews/1"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (본인의 리뷰만 삭제 가능)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/reviews/1"
+                status: 403
+                code: FORBIDDEN
+                message: 권한 없음
+        "404":
+          description: 리뷰를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/reviews/999"
+                status: 404
+                code: RESOURCE_NOT_FOUND
+                message: 리뷰를 찾을 수 없습니다
+
   /books/{id}/favorite:
     post:
       tags: [Favorites]
@@ -630,20 +1602,96 @@ paths:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '201':
+        "201":
           description: 찜 추가 완료
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 찜 추가 완료
+                data: {}
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/1/favorite"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "409":
+          description: 이미 찜한 도서
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/1/favorite"
+                status: 409
+                code: DUPLICATE_RESOURCE
+                message: 이미 찜한 도서입니다
+        "500":
+          description: 서버 내부 오류
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/1/favorite"
+                status: 500
+                code: INTERNAL_SERVER_ERROR
+                message: Unexpected error
+
     delete:
       tags: [Favorites]
       summary: 도서 찜 해제
@@ -653,20 +1701,73 @@ paths:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           description: 찜 해제 완료
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 찜 제거 완료
+                data: {}
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/1/favorite"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "404":
+          description: 찜 항목을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/books/1/favorite"
+                status: 404
+                code: RESOURCE_NOT_FOUND
+                message: Resource not found
+
   /cart:
     get:
       tags: [Cart]
@@ -674,36 +1775,101 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      cart:
+                        type: object
+              example:
+                status: success
+                message: 장바구니 조회 완료
+                data:
+                  cart:
+                    id: 1
+                    userId: 1
+                    items: []
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/cart"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+
     delete:
       tags: [Cart]
       summary: 장바구니 비우기
       security:
         - bearerAuth: []
       responses:
-        '200':
+        "200":
           description: 삭제 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 장바구니 비우기 완료
+                data: {}
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/cart"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+
   /cart/items:
     post:
       tags: [Cart]
@@ -715,20 +1881,117 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CartItemInput'
+              type: object
+              properties:
+                bookId:
+                  type: integer
+                quantity:
+                  type: integer
+                  minimum: 1
+              required:
+                - bookId
+                - quantity
       responses:
-        '201':
+        "201":
           description: 추가 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      cartItem:
+                        type: object
+              example:
+                status: success
+                message: 장바구니에 추가되었습니다
+                data:
+                  cartItem:
+                    id: 1
+                    cartId: 1
+                    bookId: 1
+                    quantity: 2
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/cart/items"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "404":
+          description: 도서를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/cart/items"
+                status: 404
+                code: RESOURCE_NOT_FOUND
+                message: 도서를 찾을 수 없습니다
+        "422":
+          description: 유효하지 않은 요청 데이터
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: object
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/cart/items"
+                status: 422
+                code: UNPROCESSABLE_ENTITY
+                message: Invalid request data
+                details: []
+
   /cart/items/{itemId}:
     patch:
       tags: [Cart]
@@ -739,7 +2002,8 @@ paths:
         - name: itemId
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -749,21 +2013,108 @@ paths:
               properties:
                 quantity:
                   type: integer
+                  minimum: 1
               required:
                 - quantity
       responses:
-        '200':
+        "200":
           description: 수정 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      cartItem:
+                        type: object
+              example:
+                status: success
+                message: 수량 변경 완료
+                data:
+                  cartItem:
+                    id: 1
+                    quantity: 5
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/cart/items/1"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "404":
+          description: 장바구니 아이템을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/cart/items/999"
+                status: 404
+                code: RESOURCE_NOT_FOUND
+                message: 장바구니 아이템을 찾을 수 없습니다
+        "422":
+          description: 유효하지 않은 요청 데이터
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: object
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/cart/items/1"
+                status: 422
+                code: UNPROCESSABLE_ENTITY
+                message: Invalid request data
+                details: []
+
     delete:
       tags: [Cart]
       summary: 장바구니 아이템 제거
@@ -773,20 +2124,73 @@ paths:
         - name: itemId
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           description: 삭제 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 항목 삭제 완료
+                data: {}
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/cart/items/1"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "404":
+          description: 장바구니 아이템을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/cart/items/999"
+                status: 404
+                code: RESOURCE_NOT_FOUND
+                message: 장바구니 아이템을 찾을 수 없습니다
+
   /orders:
     post:
       tags: [Orders]
@@ -794,36 +2198,162 @@ paths:
       security:
         - bearerAuth: []
       responses:
-        '201':
+        "201":
           description: 주문 생성 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      order:
+                        type: object
+              example:
+                status: success
+                message: 주문 생성 완료
+                data:
+                  order:
+                    id: 1
+                    userId: 1
+                    totalAmount: 33000
+                    status: PENDING
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/orders"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "409":
+          description: 주문 생성 불가 (재고 부족, 장바구니 비어있음 등)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/orders"
+                status: 409
+                code: STATE_CONFLICT
+                message: 장바구니가 비어있습니다
+
     get:
       tags: [Orders]
       summary: 내 주문 목록
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+            default: createdAt
+        - name: order
+          in: query
+          schema:
+            type: string
+            default: desc
+        - name: status
+          in: query
+          schema:
+            type: string
       responses:
-        '200':
+        "200":
           description: 목록 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      orders:
+                        type: array
+                        items:
+                          type: object
+                      meta:
+                        type: object
+              example:
+                status: success
+                message: 내 주문 목록 조회 완료
+                data:
+                  orders: []
+                  meta:
+                    page: 1
+                    limit: 20
+                    total: 0
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/orders"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+
   /orders/{id}:
     get:
       tags: [Orders]
@@ -834,20 +2364,104 @@ paths:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           description: 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      order:
+                        type: object
+              example:
+                status: success
+                message: 주문 상세 조회 완료
+                data:
+                  order:
+                    id: 1
+                    userId: 1
+                    totalAmount: 33000
+                    status: PENDING
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/orders/1"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (본인의 주문만 조회 가능)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/orders/1"
+                status: 403
+                code: FORBIDDEN
+                message: 권한이 없습니다
+        "404":
+          description: 주문을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/orders/999"
+                status: 404
+                code: RESOURCE_NOT_FOUND
+                message: 주문을 찾을 수 없습니다
+
   /orders/{id}/cancel:
     post:
       tags: [Orders]
@@ -858,123 +2472,568 @@ paths:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           description: 취소 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      order:
+                        type: object
+              example:
+                status: success
+                message: 주문 취소 완료
+                data:
+                  order:
+                    id: 1
+                    status: CANCELLED
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/orders/1/cancel"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (본인의 주문만 취소 가능)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/orders/1/cancel"
+                status: 403
+                code: FORBIDDEN
+                message: 권한이 없습니다
+        "404":
+          description: 주문을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/orders/999"
+                status: 404
+                code: RESOURCE_NOT_FOUND
+                message: 주문을 찾을 수 없습니다
+
   /admin/users:
     get:
       tags: [Admin]
-      summary: 전체 유저 목록 조회
+      summary: 전체 유저 목록 조회 (ADMIN만 가능)
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+            default: createdAt
+        - name: order
+          in: query
+          schema:
+            type: string
+            default: desc
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: role
+          in: query
+          schema:
+            type: string
       responses:
-        '200':
+        "200":
           description: 유저 목록 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 유저 목록 조회 완료
+                data:
+                  items: []
+                  meta:
+                    page: 1
+                    limit: 20
+                    total: 0
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/users"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (ADMIN만 가능)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/users"
+                status: 403
+                code: FORBIDDEN
+                message: 권한이 없습니다
+
   /admin/users/{id}:
     patch:
       tags: [Admin]
-      summary: 특정 유저 정보 수정
+      summary: 특정 유저 정보 수정 (ADMIN만 가능)
       security:
         - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              additionalProperties: true
+              properties:
+                role:
+                  type: string
+                name:
+                  type: string
+                resetPassword:
+                  type: string
+                restore:
+                  type: boolean
       responses:
-        '200':
+        "200":
           description: 유저 수정 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 유저 정보 수정 완료
+                data:
+                  user:
+                    id: 1
+                    role: SELLER
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/users/1"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (ADMIN만 가능)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/users/1"
+                status: 403
+                code: FORBIDDEN
+                message: 권한이 없습니다
+        "404":
+          description: 유저를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/users/999"
+                status: 404
+                code: USER_NOT_FOUND
+                message: 유저를 찾을 수 없습니다
+        "409":
+          description: 자기 자신은 수정할 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/users/1"
+                status: 409
+                code: STATE_CONFLICT
+                message: 자기 자신은 수정할 수 없습니다
+
     delete:
       tags: [Admin]
-      summary: 특정 유저 비활성화
+      summary: 특정 유저 비활성화 (ADMIN만 가능)
       security:
         - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       responses:
-        '200':
+        "200":
           description: 유저 비활성화 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 회원 정지 완료
+                data: {}
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/users/1"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (ADMIN만 가능)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/users/1"
+                status: 403
+                code: FORBIDDEN
+                message: 권한이 없습니다
+        "409":
+          description: 자기 자신은 정지할 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/users/1"
+                status: 409
+                code: STATE_CONFLICT
+                message: 관리자는 자기 자신을 정지할 수 없습니다
+
   /admin/orders:
     get:
       tags: [Admin]
-      summary: 전체 주문 목록 조회
+      summary: 전체 주문 목록 조회 (ADMIN만 가능)
       security:
         - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+            default: createdAt
+        - name: order
+          in: query
+          schema:
+            type: string
+            default: desc
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: userId
+          in: query
+          schema:
+            type: integer
+        - name: q
+          in: query
+          schema:
+            type: string
       responses:
-        '200':
+        "200":
           description: 전체 주문 목록 조회 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 전체 주문 목록 조회 완료
+                data:
+                  items: []
+                  meta:
+                    page: 1
+                    limit: 20
+                    total: 0
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/orders"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (ADMIN만 가능)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/orders"
+                status: 403
+                code: FORBIDDEN
+                message: 권한이 없습니다
+
   /admin/orders/{id}/status:
     patch:
       tags: [Admin]
-      summary: 주문 상태 변경
+      summary: 주문 상태 변경 (ADMIN만 가능)
       security:
         - bearerAuth: []
       parameters:
         - name: id
           in: path
           required: true
-          schema: { type: integer }
+          schema:
+            type: integer
       requestBody:
         required: true
         content:
@@ -984,30 +3043,122 @@ paths:
               properties:
                 status:
                   type: string
-                  example: SHIPPED
+                  example: PAID
               required:
                 - status
       responses:
-        '200':
+        "200":
           description: 주문 상태 변경 성공
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
-        '400': { $ref: '#/components/responses/BadRequest' }
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/Unprocessable' }
-        '500': { $ref: '#/components/responses/ServerError' }
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+                  data:
+                    type: object
+              example:
+                status: success
+                message: 주문 상태 변경 완료
+                data:
+                  order:
+                    id: 1
+                    status: SHIPPED
+        "401":
+          description: 인증되지 않음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/orders/1/status"
+                status: 401
+                code: UNAUTHORIZED
+                message: 인증되지 않음
+        "403":
+          description: 권한 없음 (ADMIN만 가능)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: integer
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T11:23:45.237Z"
+                path: "/admin/orders/1/status"
+                status: 403
+                code: FORBIDDEN
+                message: 권한이 없습니다
+        "404":
+          description: 주문을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  timestamp:
+                    type: string
+                  path:
+                    type: string
+                  status:
+                    type: string
+                  code:
+                    type: string
+                  message:
+                    type: string
+              example:
+                timestamp: "2025-12-14T13:16:00.399Z"
+                path: "/admin/orders/1/status"
+                status: fail
+                code: RESOURCE_NOT_FOUND
+                message: 주문을 찾을 수 없습니다
+
   /health:
     get:
       tags: [Health]
       summary: 서비스 헬스 체크
       responses:
-        '200':
+        "200":
           description: 서버 상태 OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessEnvelope'
+                type: object
+                properties:
+                  status:
+                    type: string
+                  version:
+                    type: string
+                  buildTime:
+                    type: string
+                  uptime:
+                    type: number
+              example:
+                status: ok
+                version: 1.0.0
+                buildTime: local
+                uptime: 123.456

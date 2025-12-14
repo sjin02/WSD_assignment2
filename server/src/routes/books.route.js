@@ -12,6 +12,8 @@ import {
  } from '../controllers/books.controller.js';
 import { createReviewController } from '../controllers/reviews.controller.js';
 import { addFavoriteController, removeFavoriteController } from '../controllers/favorites.controller.js';  
+import { validate } from "../middlewares/validate.middleware.js";
+import { createBookSchema } from '../dtos/book.dto.js';
 
 const router = Router();
 
@@ -20,7 +22,7 @@ router.get("/:id", getBookByIdController);
 // router.get("/:id/reviews", getReviews);
 router.get("/:id/stats", getStats);
 
-router.post("/", authenticate, authorize("SELLER", "ADMIN"), createBookController);
+router.post("/", authenticate, authorize("SELLER", "ADMIN"), validate(createBookSchema), createBookController);
 router.patch("/:id", authenticate, authorize("SELLER", "ADMIN"), updateBookController);
 router.delete("/:id", authenticate, authorize("SELLER", "ADMIN"), deleteBookController);
 
