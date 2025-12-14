@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:16
+    container_name: bookstore-db
+    restart: always
+    environment:
+      POSTGRES_DB: bookstore
+      POSTGRES_USER: bookstore_user
+      POSTGRES_PASSWORD: 136199
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  api:
+    build: .
+    container_name: bookstore-api
+    restart: always
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    command: sh -c "npx prisma migrate deploy && node src/server.js"
+
+volumes:
+  pgdata:
