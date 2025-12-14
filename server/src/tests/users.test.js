@@ -1,7 +1,7 @@
 import request from 'supertest';
-import app from '../src/app.js';
-import prisma from '../src/prisma/client.js';
-import { createUsers } from '../src/prisma/data/users.js';
+import app from '../app.js';
+import prisma from '../prisma/client.js';
+import { createUsers } from '../prisma/data/users.js';
 
 describe('사용자 API', () => {
   let accessToken;
@@ -71,7 +71,7 @@ describe('사용자 API', () => {
           email: 'incomplete@test.com',
         });
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(422);
       expect(response.body.status).toBe("fail");
     });
 
@@ -84,7 +84,7 @@ describe('사용자 API', () => {
           name: '테스트 사용자',
         });
 
-      expect(response.status).toBe(400);
+      expect(response.status).toBe(422);
       expect(response.body.status).toBe("fail");
     });
   });

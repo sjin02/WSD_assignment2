@@ -1,8 +1,8 @@
 import request from 'supertest';
-import app from '../src/app.js';
-import prisma from '../src/prisma/client.js';
-import { createUsers } from '../src/prisma/data/users.js';
-import { createBooks } from '../src/prisma/data/books.js';
+import app from '../app.js';
+import prisma from '../prisma/client.js';
+import { createUsers } from '../prisma/data/users.js';
+import { createBooks } from '../prisma/data/books.js';
 
 describe('주문 API', () => {
   let userToken;
@@ -46,21 +46,20 @@ describe('주문 API', () => {
 
   describe('POST /orders', () => {
     it('새 주문 생성 성공', async () => {
-      const response = await request(app)
-        .post('/orders')
+      await request(app)
+        .post('/cart/items')
         .set('Authorization', `Bearer ${userToken}`)
         .send({
-          items: [
-            {
-              bookId: bookId,
-              quantity: 2,
-            }
-          ],
-          deliveryAddress: '서울시 강남구',
+          bookId: bookId,
+          quantity: 2,
         });
+      const response = await request(app)
+        .post('/orders')
+        .set('Authorization', `Bearer ${userToken}`);
+
 
       expect(response.status).toBe(201);
-      expect(response.body.success).toBe(true);
+      expect(response.body.status).toBe("success");
       expect(response.body.data.order).toHaveProperty('id');
       expect(response.body.data.order.items.length).toBe(1);
 
@@ -68,17 +67,12 @@ describe('주문 API', () => {
       orderId = response.body.data.order.id;
     });
 
-    it('빈 주문 항목으로 주문 생성 실패', async () => {
+    it('비어있는 장바구니로 주문 생성 실패', async () => {
       const response = await request(app)
         .post('/orders')
-        .set('Authorization', `Bearer ${userToken}`)
-        .send({
-          items: [],
-          deliveryAddress: '서울시 강남구',
-        });
-
-      expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
+        .set('Authorization', `Bearer ${userToken}`);
+      expect(response.status).toBe(409);
+      expect(response.body.status).toBe("fail");
     });
 
     it('유효하지 않은 도서 ID로 주문 생성 실패', async () => {
@@ -96,7 +90,7 @@ describe('주문 API', () => {
         });
 
       expect(response.status).toBe(404);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
 
     it('인증 없이 주문 생성 실패', async () => {
@@ -113,7 +107,7 @@ describe('주문 API', () => {
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
   });
 
@@ -124,7 +118,7 @@ describe('주문 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
+      expect(response.body.status).toBe("success");
       expect(Array.isArray(response.body.data.orders)).toBe(true);
       expect(response.body.data.orders.length).toBeGreaterThan(0);
     });
@@ -136,7 +130,7 @@ describe('주문 API', () => {
         .query({ page: 1, limit: 10 });
 
       expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
+      expect(response.body.status).toBe("success");
     });
 
     it('인증 없이 주문 목록 조회 실패', async () => {
@@ -144,7 +138,7 @@ describe('주문 API', () => {
         .get('/orders');
 
       expect(response.status).toBe(401);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
   });
 
@@ -155,7 +149,7 @@ describe('주문 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
+      expect(response.body.status).toBe("success");
       expect(response.body.data.order).toHaveProperty('id');
       expect(response.body.data.order.id).toBe(orderId);
     });
@@ -166,7 +160,7 @@ describe('주문 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(404);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
 
     it('인증 없이 주문 조회 실패', async () => {
@@ -174,7 +168,7 @@ describe('주문 API', () => {
         .get(`/orders/${orderId}`);
 
       expect(response.status).toBe(401);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
   });
 
@@ -205,7 +199,7 @@ describe('주문 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
+      expect(response.body.status).toBe("success");
       expect(response.body.data.order.status).toBe('CANCELLED');
     });
 
@@ -215,7 +209,7 @@ describe('주문 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(404);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
 
     it('인증 없이 주문 취소 실패', async () => {
@@ -223,7 +217,7 @@ describe('주문 API', () => {
         .post(`/orders/${orderId}/cancel`);
 
       expect(response.status).toBe(401);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
   });
 });

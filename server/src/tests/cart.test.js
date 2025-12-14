@@ -1,8 +1,8 @@
 import request from 'supertest';
-import app from '../src/app.js';
-import prisma from '../src/prisma/client.js';
-import { createUsers } from '../src/prisma/data/users.js';
-import { createBooks } from '../src/prisma/data/books.js';
+import app from '../app.js';
+import prisma from '../prisma/client.js';
+import { createUsers } from '../prisma/data/users.js';
+import { createBooks } from '../prisma/data/books.js';
 
 describe('장바구니 API', () => {
   let userToken;
@@ -51,7 +51,7 @@ describe('장바구니 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
+      expect(response.body.status).toBe("success");
       expect(response.body.data).toHaveProperty('cart');
     });
 
@@ -60,7 +60,7 @@ describe('장바구니 API', () => {
         .get('/cart');
 
       expect(response.status).toBe(401);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
   });
 
@@ -75,7 +75,7 @@ describe('장바구니 API', () => {
         });
 
       expect(response.status).toBe(201);
-      expect(response.body.success).toBe(true);
+      expect(response.body.status).toBe("success");
       expect(response.body.data.cartItem.quantity).toBe(2);
 
       // cartItemId 저장
@@ -92,7 +92,7 @@ describe('장바구니 API', () => {
         });
 
       expect(response.status).toBe(404);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
 
     it('유효하지 않은 수량으로 추가 실패', async () => {
@@ -104,8 +104,8 @@ describe('장바구니 API', () => {
           quantity: 0,
         });
 
-      expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
+      expect(response.status).toBe(422);
+      expect(response.body.status).toBe("fail");
     });
 
     it('인증 없이 상품 추가 실패', async () => {
@@ -117,7 +117,7 @@ describe('장바구니 API', () => {
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
   });
 
@@ -131,7 +131,7 @@ describe('장바구니 API', () => {
         });
 
       expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
+      expect(response.body.status).toBe("success");
       expect(response.body.data.cartItem.quantity).toBe(5);
     });
 
@@ -143,8 +143,8 @@ describe('장바구니 API', () => {
           quantity: -1,
         });
 
-      expect(response.status).toBe(400);
-      expect(response.body.success).toBe(false);
+      expect(response.status).toBe(422);
+      expect(response.body.status).toBe("fail");
     });
 
     it('존재하지 않는 상품 수량 변경 실패', async () => {
@@ -156,7 +156,7 @@ describe('장바구니 API', () => {
         });
 
       expect(response.status).toBe(404);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
 
     it('인증 없이 수량 변경 실패', async () => {
@@ -167,7 +167,7 @@ describe('장바구니 API', () => {
         });
 
       expect(response.status).toBe(401);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
   });
 
@@ -178,7 +178,7 @@ describe('장바구니 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
+      expect(response.body.status).toBe("success");
     });
 
     it('존재하지 않는 상품 삭제 실패', async () => {
@@ -187,7 +187,7 @@ describe('장바구니 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(404);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
 
     it('인증 없이 상품 삭제 실패', async () => {
@@ -195,7 +195,7 @@ describe('장바구니 API', () => {
         .delete('/cart/items/1');
 
       expect(response.status).toBe(401);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
   });
 
@@ -217,7 +217,7 @@ describe('장바구니 API', () => {
         .set('Authorization', `Bearer ${userToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
+      expect(response.body.status).toBe("success");
     });
 
     it('인증 없이 장바구니 비우기 실패', async () => {
@@ -225,7 +225,7 @@ describe('장바구니 API', () => {
         .delete('/cart');
 
       expect(response.status).toBe(401);
-      expect(response.body.success).toBe(false);
+      expect(response.body.status).toBe("fail");
     });
   });
 });

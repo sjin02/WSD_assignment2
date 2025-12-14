@@ -1,7 +1,7 @@
 import request from 'supertest';
-import app from '../src/app.js';
-import prisma from '../src/prisma/client.js';
-import { createUsers } from '../src/prisma/data/users.js';
+import app from '../app.js';
+import prisma from '../prisma/client.js';
+import { createUsers } from '../prisma/data/users.js';
 
 describe('인증 API', () => {
   beforeAll(async () => {
@@ -86,8 +86,8 @@ describe('인증 API', () => {
   });
 
   describe('POST /auth/refresh', () => {
-    let cookies;
-
+    let refreshToken;
+    
     beforeAll(async () => {
       const loginResponse = await request(app)
         .post('/auth/login')
@@ -96,24 +96,24 @@ describe('인증 API', () => {
           password: 'password123',
         });
 
-      cookies = loginResponse.headers['set-cookie'];
+      refreshToken = loginResponse.body.data.refreshToken;
     });
 
     it('리프레시 토큰으로 액세스 토큰 갱신 성공', async () => {
       const response = await request(app)
         .post('/auth/refresh')
-        .set('Cookie', cookies);
-
+        .send({ refreshToken });
+      
       expect(response.status).toBe(200);
       expect(response.body.status).toBe("success");
       expect(response.body.data.accessToken).toBeDefined();
     });
 
-    it('쿠키 없이 갱신 실패', async () => {
+    it('리프레시 토큰 없이 갱신 실패', async () => {
       const response = await request(app)
         .post('/auth/refresh');
 
-      expect(response.status).toBe(401);
+      expect(response.status).toBe(422);
       expect(response.body.status).toBe("fail");
     });
   });
@@ -139,7 +139,7 @@ describe('인증 API', () => {
         .set('Authorization', `Bearer ${accessToken}`);
 
       expect(response.status).toBe(200);
-      expect(response.body.success).toBe(true);
+      expect(response.body.status).toBe("success");
     });
 
     it('인증 없이 로그아웃 실패', async () => {

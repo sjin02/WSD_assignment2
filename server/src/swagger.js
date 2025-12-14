@@ -1,33 +1,12 @@
-import swaggerJSDoc from "swagger-jsdoc";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+import YAML from "yaml";
 
-const options = {
-  definition: {
-    openapi: "3.0.0",
-    info: {
-      title: "Bookstore API",
-      version: "1.0.0",
-      description: "express기반 온라인 서점 REST API 문서",
-    },
-    servers: [
-      {
-        url: "http://localhost:5000",
-        description: "Local server",
-      },
-    ],
-    components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: "http",
-          scheme: "bearer",
-          bearerFormat: "JWT",
-        },
-      },
-    },
-  },
-  apis: [
-    "./src/routes/*.js",
-    "./src/controllers/*.js",
-  ],
-};
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-export const swaggerSpec = swaggerJSDoc(options);
+const docPath = path.resolve(__dirname, "../docs/openapi.yaml");
+const swaggerFile = fs.readFileSync(docPath, "utf8");
+
+export const swaggerSpec = YAML.parse(swaggerFile);

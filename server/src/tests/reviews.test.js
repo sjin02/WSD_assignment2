@@ -1,8 +1,8 @@
 import request from 'supertest';
-import app from '../src/app.js';
-import prisma from '../src/prisma/client.js';
-import { createUsers } from '../src/prisma/data/users.js';
-import { createBooks } from '../src/prisma/data/books.js';
+import app from '../app.js';
+import prisma from '../prisma/client.js';
+import { createUsers } from '../prisma/data/users.js';
+import { createBooks } from '../prisma/data/books.js';
 
 describe('리뷰 API', () => {
   let userToken;
