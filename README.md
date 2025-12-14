@@ -196,3 +196,5 @@ GitHub Actions를 사용하여 서버 코드에 대한 CI 파이프라인을 구
 - 실제 결제 시스템 미연동
 - 캐시 및 대규모 트래픽 대응 미구현
 - 향후 Redis, WebSocket 기능 확장 예정
+
+++github에 push오류로 모르는 사람이 contributor로 들어가 있으나, 현재 github캐시만 남아있고 실제로 contributor를 클릭해 확인하면 제대로 동작합니다...... 아마 곧 캐시가 사라지면 정상적으로 보일 것 같습니다++

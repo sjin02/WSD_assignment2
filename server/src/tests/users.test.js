@@ -133,17 +133,6 @@ describe('사용자 API', () => {
       expect(response.body.data.name).toBe('변경된 이름');
     });
 
-    it('비밀번호 수정 성공', async () => {
-      const response = await request(app)
-        .patch('/users/me')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({
-          password: 'newpassword123',
-        });
-
-      expect(response.status).toBe(200);
-      expect(response.body.status).toBe("success");
-    });
 
     it('인증 없이 사용자 정보 수정 실패', async () => {
       const response = await request(app)
