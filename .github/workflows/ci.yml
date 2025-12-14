@@ -12,7 +12,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:15
+        image: postgres:16
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -47,11 +47,11 @@ jobs:
         working-directory: ./server
         run: npx prisma migrate deploy
         env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/bookstore_test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bookstore_test
 
       - name: Run tests
         working-directory: ./server
         run: npm test
         env:
           NODE_ENV: test
-          DATABASE_URL: postgresql://test:test@localhost:5432/bookstore_test
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bookstore_test
