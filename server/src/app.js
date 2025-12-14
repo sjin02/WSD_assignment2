@@ -36,6 +36,9 @@ const publicLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15분
   max: 100,                // IP당 100회
 });
+app.get("/", (req, res) => {
+  res.status(200).send("ROOT OK");
+});
 
 app.use("/auth", publicLimiter);
 app.use("/health", publicLimiter);
