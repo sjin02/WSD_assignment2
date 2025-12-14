@@ -10,7 +10,7 @@ import { addCartItemDto, updateCartItemDto } from "../dtos/cart.dto.js";
 export async function getMyCart(req, res, next) {
   try {
     const cart = await getOrCreateCart(req.user.userId);
-    res.success(cart, 200, "장바구니 조회 완료");
+    res.success({ cart }, 200, "장바구니 조회 완료");
   } catch (err) {
     next(err);
   }
@@ -20,7 +20,7 @@ export async function addCartItem(req, res, next) {
   try {
     const dto = addCartItemDto.parse(req.body);
     const item = await addItemToCart(req.user.userId, dto);
-    res.success(item, 201, "장바구니에 추가되었습니다");
+    res.success({ cartItem: item }, 201, "장바구니에 추가되었습니다");
   } catch (err) {
     next(err);
   }
@@ -37,7 +37,7 @@ export async function updateCartItemQty(req, res, next) {
       dto.quantity
     );
 
-    res.success(item, 200, "수량 변경 완료");
+    res.success({ cartItem: item }, 200, "수량 변경 완료");
   } catch (err) {
     next(err);
   }

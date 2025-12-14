@@ -261,7 +261,9 @@ describe('도서 API', () => {
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe("success");
-      expect(Array.isArray(response.body.data.reviews)).toBe(true);
+      expect(response.body.data).toHaveProperty('items');
+      expect(Array.isArray(response.body.data.items)).toBe(true);
+      expect(response.body.data).toHaveProperty('meta');
     });
   });
 

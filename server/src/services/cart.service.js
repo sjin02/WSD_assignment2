@@ -33,6 +33,16 @@ export async function getOrCreateCart(userId) {
  * 장바구니에 책 추가
  */
 export async function addItemToCart(userId, { bookId, quantity }) {
+  const book = await prisma.book.findUnique({ where: { id: bookId } });
+
+  if (!book) {
+    throw {
+      status: 404,
+      code: "RESOURCE_NOT_FOUND",
+      message: "도서를 찾을 수 없습니다",
+    };
+  }
+
   const cart = await getOrCreateCart(userId);
 
   const existingItem = await prisma.cartItem.findFirst({

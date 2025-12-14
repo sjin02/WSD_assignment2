@@ -18,7 +18,7 @@ export async function createReviewController(req, res, next) {
       ...dto, // rating, comment
     });
 
-    res.success(review, 201, "리뷰 작성 완료");
+    res.success({ review }, 201, "리뷰 작성 완료");
   } catch (err) {
     next(err);
   }
@@ -35,8 +35,8 @@ export async function updateReviewController(req, res, next) {
       userId,
       ...dto,
     });
-    
-    res.success(review, 200, "리뷰 수정 완료");
+
+    res.success({ review }, 200, "리뷰 수정 완료");
   } catch (err) {
     if (err.message === "REVIEW_NOT_FOUND") {
       return res.fail("리뷰를 찾을 수 없습니다", 404, "RESOURCE_NOT_FOUND");
@@ -77,7 +77,7 @@ export async function getMyReviewsController(req, res, next) {
       limit: Number(limit),
     });
 
-    res.success(result, 200, "내 리뷰 조회 완료");
+    res.success({ reviews: result.items, meta: result.meta }, 200, "내 리뷰 조회 완료");
   } catch (err) {
     next(err);
   }
