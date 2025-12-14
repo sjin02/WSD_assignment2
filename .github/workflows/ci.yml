@@ -55,3 +55,7 @@ jobs:
         env:
           NODE_ENV: test
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/bookstore_test
+          JWT_ACCESS_SECRET: access-secret
+          JWT_REFRESH_SECRET: refresh-secret
+          ACCESS_TOKEN_EXPIRES_IN: 15m
+          REFRESH_TOKEN_EXPIRES_IN: 7d
