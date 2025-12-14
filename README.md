@@ -117,8 +117,6 @@ docker system prune 등 정리 후에도 Prisma 및 Node 이미지 빌드 과정
 - Health: http://113.198.66.68:10081/health
 - Metrics: http://113.198.66.68:10081/metrics
   <br>
-- postman : https://documenter.getpostman.com/view/48959495/2sB3dTs88x#b7df93a4-69bf-43ea-aa66-c15f178516c9
-
 ---
 
 ## 5. 인증 플로우
@@ -191,6 +189,8 @@ seller1@test.com / password123
 ---
 
 ## 10. Postman 컬렉션
+
+- postman : https://documenter.getpostman.com/view/48959495/2sB3dTs88x#b7df93a4-69bf-43ea-aa66-c15f178516c9
 
 - 환경 변수 (baseUrl, accessToken, refreshToken) 사용
 - Pre-request / Post-response Script 5개이상 포함
